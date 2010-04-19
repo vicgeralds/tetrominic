@@ -8,10 +8,8 @@ void gettermtype()
 	if (s) {
 		if (!strncmp(s, "xterm", 5))
 			terminal.type = XTERM;
-		else if (!strcmp(s, "linux")) {
+		else if (!strcmp(s, "linux"))
 			terminal.type = LINUX_TERM;
-			terminal.acs_disabled = "oprs";
-		}
 		else if (!strcmp(s, "cygwin"))
 			terminal.type = CYGWIN;
 	}

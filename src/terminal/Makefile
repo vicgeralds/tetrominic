@@ -1,7 +1,8 @@
 CCFLAGS = $(CFLAGS) $(CPPFLAGS)
 
 OBJS = terminal.o termsize.o termtype.o inputmode.o \
-       acs.o textout.o charenc.o
+       acs.o textout.o charenc.o \
+       xwindow.o
 
 terminal.a: $(OBJS)
 	ar rs terminal.a $(OBJS)
@@ -26,6 +27,9 @@ textout.o: textout.c terminal.h
 
 charenc.o: charenc.c terminal.h
 	$(CC) $(CCFLAGS) -c charenc.c
+
+xwindow.o: xwindow.c terminal.h
+	$(CC) $(CCFLAGS) $(XLIB_INC) -c xwindow.c
 
 clean:
 	rm -f $(OBJS)

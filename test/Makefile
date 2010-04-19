@@ -1,13 +1,19 @@
 CCFLAGS = $(CFLAGS) $(CPPFLAGS)
+terminal_dir = ../src/terminal
+terminal_a = $(terminal_dir)/terminal.a
+CCterminal = $(CC) $(CCFLAGS) -I$(terminal_dir)
 
-putlatin1: putlatin1.c ../src/terminal/terminal.a
-	$(CC) $(CCFLAGS) -I../src/terminal -o putlatin1 \
-putlatin1.c ../src/terminal/terminal.a
+all: putlatin1 putacs allegro-charenc xfocus
 
-putacs: putacs.c ../src/terminal/terminal.a
-	$(CC) $(CCFLAGS) -I../src/terminal -o putacs \
-putacs.c ../src/terminal/terminal.a
+putlatin1: putlatin1.c $(terminal_a)
+	$(CCterminal) -o putlatin1 putlatin1.c $(terminal_a)
+
+putacs: putacs.c $(terminal_a)
+	$(CCterminal) -o putacs putacs.c $(terminal_a)
 
 allegro-charenc: allegro-charenc.c ../src/terminal/charenc.o
-	$(CC) $(CCFLAGS) -I../src/terminal -o allegro-charenc \
-allegro-charenc.c ../src/terminal/charenc.o `allegro-config --libs`
+	$(CCterminal) -o allegro-charenc \
+allegro-charenc.c $(terminal_dir)/charenc.o `allegro-config --libs`
+
+xfocus: xfocus.c $(terminal_a)
+	$(CCterminal) -o xfocus xfocus.c $(terminal_a) -lX11

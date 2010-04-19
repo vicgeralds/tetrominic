@@ -33,8 +33,10 @@ struct terminal {
 	enum acs     acs;
 	const char  *acs_disabled;	/* set of disabled characters */
 	FILE *out;
+	char *wm_class[2];
 	void (*hide_cursor)();
 	void (*show_cursor)();
+	int  (*has_focus)();
 };
 
 extern struct terminal terminal;
@@ -45,6 +47,14 @@ void init_terminal();
 void gettermsize();
 void gettermtype();
 
+/* connect to X and get focus detection and more!
+   terminal.
+	wm_class[2]	e.g. {"xterm", "XTerm"}
+	has_focus()	returns 0 if top-level window loses focus
+*/
+void xwindow_init();
+void xwindow_exit();
+
 /* terminal non-canonical mode */
 void set_input_mode();
 void restore_input_mode();
@@ -54,6 +64,7 @@ void tputstr(const char *s);
 int  tprintf(const char *format, ...);
 
 /* use the alt char set (line drawing) */
+void init_acs_caps();
 void set_acs_table();
 void tputacs(const char *s);
 

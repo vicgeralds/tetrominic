@@ -5,6 +5,17 @@
 
 #define ACS_BUF_SIZE 20
 
+void init_acs_caps()
+{
+	if (terminal.type == LINUX_TERM)
+		terminal.acs_disabled = "oprs";
+	else if (terminal.type & XTERM)
+		terminal.acs_disabled = "hoprs+,-.0";
+
+	if (!strcmp(terminal.wm_class[1], "XTerm"))
+		terminal.acs_disabled = "h+,-.0";
+}
+
 static void set_acs_vt100()
 {
 	const char *disabled = terminal.acs_disabled;

@@ -6,6 +6,7 @@ int main(int argc, char **argv)
 {
 	init_terminal();
 	gettermtype();
+	init_acs_caps();
 	terminal.acs = ACS_VT100;
 
 	const char *names[8] = {0};
