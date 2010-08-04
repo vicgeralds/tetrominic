@@ -104,6 +104,9 @@ void replace_codepage_c0();
    returns length of string stored in buf == strlen(buf) < n */
 int convert_chars(const char *s, char *buf, int n);
 
+/* typical use: uc_min=0xA0 */
+int convert_chars_hi(const char *s, char *buf, int n, unsigned uc_min);
+
 int acs_to_unicode(int c);
 
 /* apply pure function f to chars in s1 -> s2 */

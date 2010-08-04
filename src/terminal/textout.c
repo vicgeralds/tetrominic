@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include "terminal.h"
 
 void set_latin1_codepage()
@@ -39,7 +38,7 @@ static void puttext(const char *s)
 {
 	char buf[80];
 	while (*s) {
-		s += convert_chars(s, buf, sizeof(buf));
+		s += convert_chars_hi(s, buf, sizeof(buf), 0xA0);
 		tputstr(buf);
 	}
 }

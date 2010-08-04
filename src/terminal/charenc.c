@@ -99,14 +99,23 @@ void replace_codepage_c0()
 
 int convert_chars(const char *s, char *buf, int n)
 {
+	return convert_chars_hi(s, buf, n, 0);
+}
+
+int convert_chars_hi(const char *s, char *buf, int n, unsigned uc_min)
+{
 	char *p    = buf;
 	char *nulp = buf + n - 1;
 	int i;
 	for (; *s && p < nulp; s++, p++) {
 		i = (unsigned char) *s;
-		if (!table.chars[i])
-			table.chars[i] = *s;
-		*p = table.chars[i];
+		if (i < uc_min)
+			*p = *s;
+		else {
+			if (!table.chars[i])
+				table.chars[i] = *s;
+			*p = table.chars[i];
+		}
 	}
 	*p = '\0';
 	return p - buf;

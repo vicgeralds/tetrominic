@@ -1,0 +1,6 @@
+[textgfx]
+textgfx
+colors
+box
+pattern
+ansi

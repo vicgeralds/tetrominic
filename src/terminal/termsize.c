@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "config.h"
+#include "config/conio.h"
+#include "config/os.h"
 #if HAVE_GETTEXTINFO
 #include <conio.h>
 #elif UNIX
