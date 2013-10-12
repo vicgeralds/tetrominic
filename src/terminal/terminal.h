@@ -1,7 +1,8 @@
-/* (UNIX) Terminal interface */
+/* Text terminal interface */
 
 #ifndef terminal_h
 #define terminal_h
+
 #include <stdio.h>
 
 #define XTERM      1
@@ -22,7 +23,7 @@ enum acs {
 	ACS_ASCII,
 	ACS_VT100,	/* switch to ACS */
 	ACS_IBM,	/* use codepage graphics */
-	ACS_UNICODE	/* it's popular */
+	ACS_UNICODE
 };
 
 struct terminal {
@@ -33,7 +34,7 @@ struct terminal {
 	enum acs     acs;
 	const char  *acs_disabled;	/* set of disabled characters */
 	FILE *out;
-	char *wm_class[2];
+	char *wm_class[2];		/* window name and class */
 	void (*hide_cursor)();
 	void (*show_cursor)();
 	int  (*has_focus)();
@@ -47,8 +48,7 @@ void init_terminal();
 void gettermsize();
 void gettermtype();
 
-/* connect to X and get focus detection and more!
-   terminal.
+/* connect to X and get focus detection and window info:
 	wm_class[2]	e.g. {"xterm", "XTerm"}
 	has_focus()	returns 0 if top-level window loses focus
 */
@@ -77,7 +77,7 @@ void tputtext(const char *s);
 /* put unicode character (cast to unsigned char if < 0) */
 void tputchar(int c);
 
-/* Low-level character coding */
+/* Internal routines and tables for converting characters. */
 
 extern const char acs_vt100[];
 extern const char acs_ascii[];
@@ -108,12 +108,6 @@ int convert_chars(const char *s, char *buf, int n);
 int convert_chars_hi(const char *s, char *buf, int n, unsigned uc_min);
 
 int acs_to_unicode(int c);
-
-/* apply pure function f to chars in s1 -> s2 */
-void str_map(int (*f)(int), const char *s1, char *s2);
-
-/* all characters are 7-bit */
-int isasciistr(const char *s);
 
 /* Encode one character to UTF-8 and return the number of bytes used.
    Max 3 bytes -- from U+0000 to U+FFFF. */

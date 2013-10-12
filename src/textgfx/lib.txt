@@ -1,6 +1,6 @@
 [textgfx]
 textgfx
-colors
-box
-pattern
 ansi
+draw
+layout
+bitmap

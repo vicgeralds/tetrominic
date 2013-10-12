@@ -6,14 +6,14 @@ textgfx.a: $(OBJS)
 
 textgfx.o: textgfx.c textgfx.h ../terminal/terminal.h
 	$(CC) $(CCFLAGS) -I../terminal -c textgfx.c
-box.o: box.c textgfx.h ../terminal/terminal.h
-	$(CC) $(CCFLAGS) -I../terminal -c box.c
-pattern.o: pattern.c textgfx.h
-	$(CC) $(CCFLAGS) -c pattern.c
-colors.o: colors.c textgfx.h
-	$(CC) $(CCFLAGS) -c colors.c
 ansi.o: ansi.c textgfx.h ../terminal/terminal.h
 	$(CC) $(CCFLAGS) -I../terminal -c ansi.c
+draw.o: draw.c textgfx.h
+	$(CC) $(CCFLAGS) -c draw.c
+layout.o: layout.c textgfx.h
+	$(CC) $(CCFLAGS) -c layout.c
+bitmap.o: bitmap.c bitmap.h
+	$(CC) $(CCFLAGS) -c bitmap.c
 
 clean:
 	rm -f *.o

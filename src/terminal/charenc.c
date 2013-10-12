@@ -127,25 +127,6 @@ int acs_to_unicode(int c)
 
 }
 
-void str_map(int (*f)(int), const char *s1, char *s2)
-{
-	int c1 = 0;
-	int c2 = 0;
-	for (; *s1; s1++, s2++) {
-		if (*s1 != c1) {
-			c1 = *s1;
-			c2 = f(c1);
-		}
-		*s2 = c2;
-	}
-	*s2 = '\0';
-}
-
-int isasciistr(const char *s)
-{
-	return !*s || (unsigned char) *s < 0x80 && isasciistr(s+1);
-}
-
 /* Encode UTF-8 */
 
 static unsigned shift_utf8(char *s, unsigned uc)

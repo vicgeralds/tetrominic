@@ -47,35 +47,30 @@ void set_acs_table()
 }
 
 /* really switch to ACS */
-static void putacs_vt100(char *s, const char *s1)
+static void putacs_vt100(const char *s, char *v, int n)
 {
-	char asciis[ACS_BUF_SIZE] = "";
-	char *p = s;
-	char *q = asciis;
-	int n;
+	char a[ACS_BUF_SIZE] = "";
+	int i;
 
-	int i, c;
-	for (i=0; (c=s[i]); i++)
-		asciis[i] = c != s1[i] ? c : '\0';
-
-	while (*s) {
-		while (*p && !*q) {
-			p++;
-			q++;
+	/* separate ascii from vt100 codes */
+	for (i=0; i<n; i++) {
+		if (s[i] != v[i]) {
+			a[i] = v[i];
+			v[i] = '\0';
 		}
-		*p = '\0';
-		if (*s) {
+	}
+
+	for (i=0; i<n; ) {
+		if (v[i]) {
 			tputstr("\033(0");
-			tputstr(s);
+			tputstr(v+i);
 			tputstr("\033(B");
+			i += strlen(v+i);
 		}
-		if (*q) {
-			tputstr(q);
-			n = strlen(q);
-			p += n;
-			q += n;
+		if (a[i]) {
+			tputstr(a+i);
+			i += strlen(a+i);
 		}
-		s = p;
 	}
 }
 
@@ -91,7 +86,7 @@ void tputacs(const char *s)
 		for (; *s; s += n) {
 			n = convert_chars(s, buf, sizeof(buf));
 			if (terminal.acs == ACS_VT100)
-				putacs_vt100(buf, s);
+				putacs_vt100(s, buf, n);
 			else
 				tputstr(buf);
 		}
