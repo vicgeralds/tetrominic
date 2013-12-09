@@ -187,8 +187,10 @@ int update_tetmino(struct tetmino *t, const blocks_row *blocks, int gravity)
 		t->falling = drop_height(t, blocks, 1);
 
 		if (!t->falling) {
-			t->lock_delay_move--;
-			t->lock_delay_step--;
+			if (t->lock_delay_move > 0)
+				t->lock_delay_move--;
+			if (t->lock_delay_step > 0)
+				t->lock_delay_step--;
 			return 0;
 		}
 	}
