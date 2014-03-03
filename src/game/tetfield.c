@@ -1,17 +1,17 @@
 #include "tetmino.h"
 #include "tetfield.h"
 
-void init_tetfield(struct tetfield *f, int cols)
+void init_tetgrid(struct tetgrid *grid, int cols)
 {
 	int i;
-	f->blocks[0] = MAKE_FLOOR(cols);
+	grid->blocks[0] = MAKE_FLOOR(cols);
 	for (i=1; i < PLAYFIELD_HEIGHT; i++)
-		f->blocks[i] = MAKE_WALLS(cols);
+		grid->blocks[i] = MAKE_WALLS(cols);
 }
 
 static enum action make_move(struct tetfield *f, enum action a)
 {
-	if (f->timeout[a] == 0 && control_tetmino(&f->mino, f->blocks, a)) {
+	if (f->timeout[a] == 0 && control_tetmino(&f->mino, f->grid->blocks, a)) {
 		f->charge = NO_ACTION;
 		f->timeout[NO_ACTION] = 0;
 		f->timeout[a] = AUTOREPEAT_FRAMES;
@@ -47,7 +47,7 @@ int run_tetfield(struct tetfield *f, enum action a)
 	}
 
 	dec_timeout(f);
-	f->dropped = update_tetmino(&f->mino, f->blocks, f->gravity);
+	f->dropped = update_tetmino(&f->mino, f->grid->blocks, f->gravity);
 
 	/* return 0 on lock condition */
 	return (f->mino.falling | f->mino.lock_delay_move
