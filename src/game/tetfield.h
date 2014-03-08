@@ -10,6 +10,11 @@
 #define PLAYFIELD_HEIGHT 24
 #define SPAWN_ROW (PLAYFIELD_HEIGHT - 5)
 
+/* time until appearance of next tetromino */
+#define SPAWN_DELAY	10
+/* time until first drop */
+#define SPAWN_GRAVITY	15
+
 /* grid of occupied cells */
 struct tetgrid {
 	blocks_row blocks[PLAYFIELD_HEIGHT];
@@ -25,6 +30,9 @@ struct tetfield {
 };
 
 void init_tetgrid(struct tetgrid *, int cols);
+
+/* init next tetromino */
+void enter_tetfield(struct tetfield *, int piece, int col);
 
 /* set members 'moved' and 'dropped' to indicate changed position or orientation.
    return 0 on lock condition */
