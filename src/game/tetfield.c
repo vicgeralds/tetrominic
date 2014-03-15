@@ -20,6 +20,8 @@ static int is_empty_row(const struct tetgrid *grid, int row)
 int save_tetgrid(const struct tetgrid *grid, int i, unsigned char *state)
 {
 	unsigned char *p = state;
+	if (i < 1)
+		i = 1;
 	for (; i < PLAYFIELD_HEIGHT && !is_empty_row(grid, i); i++) {
 		blocks_row b = grid->blocks[i] >> LEFT_WALL_WIDTH;
 		int j;
@@ -37,6 +39,8 @@ void load_tetgrid(struct tetgrid *grid, int i, const unsigned char *state)
 {
 	const blocks_row walls = MAKE_WALLS(grid->cols);
 
+	if (i < 1)
+		i = 1;
 	for (; i < PLAYFIELD_HEIGHT; i++) {
 		blocks_row b = 0;
 		int j;

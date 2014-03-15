@@ -41,12 +41,14 @@ void init_tetgrid(struct tetgrid *, int cols);
    return number of bytes copied */
 int save_tetgrid(const struct tetgrid *, int row, unsigned char *state);
 
-/* load tetgrid from state (initialize first) */
+/* load tetgrid from state.
+   the tetgrid must have been initialized already */
 void load_tetgrid(struct tetgrid *, int row, const unsigned char *state);
 
 /* init next tetromino */
 void enter_tetfield(struct tetfield *, int piece, int col);
 
-/* set members 'moved' and 'dropped' to indicate changed position or orientation.
+/* advance one frame.
+   set members 'moved' and 'dropped' to indicate changed position or orientation.
    return 0 on lock condition */
 int run_tetfield(struct tetfield *, enum action);

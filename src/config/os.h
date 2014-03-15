@@ -1,4 +1,4 @@
-#if defined(WIN32) || defined(__WIN32__)
+#if defined(WIN32) || defined(__WIN32__) || defined(_WIN32)
 #undef WIN32
 #define WIN32 1
 #define WIN32_LEAN_AND_MEAN
