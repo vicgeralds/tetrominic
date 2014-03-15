@@ -5,9 +5,47 @@
 void init_tetgrid(struct tetgrid *grid, int cols)
 {
 	int i;
+	grid->cols = cols;
 	grid->blocks[0] = MAKE_FLOOR(cols);
 	for (i=1; i < PLAYFIELD_HEIGHT; i++)
 		grid->blocks[i] = MAKE_WALLS(cols);
+}
+
+static int is_empty_row(const struct tetgrid *grid, int row)
+{
+	/* floor has all bits set between the walls */
+	return (grid->blocks[row] & grid->blocks[0]) == 0;
+}
+
+int save_tetgrid(const struct tetgrid *grid, int i, unsigned char *state)
+{
+	unsigned char *p = state;
+	for (; i < PLAYFIELD_HEIGHT && !is_empty_row(grid, i); i++) {
+		blocks_row b = grid->blocks[i] >> LEFT_WALL_WIDTH;
+		int j;
+		/* store 7 bits per byte */
+		for (j=0; j < grid->cols; j += 7) {
+			*p = (b >> j) | 0x80;
+			p++;
+		}
+	}
+	*p = 0;
+	return p - state + 1;
+}
+
+void load_tetgrid(struct tetgrid *grid, int i, const unsigned char *state)
+{
+	const blocks_row walls = MAKE_WALLS(grid->cols);
+
+	for (; i < PLAYFIELD_HEIGHT; i++) {
+		blocks_row b = 0;
+		int j;
+		for (j=0; *state && j < grid->cols; j += 7) {
+			b |= (blocks_row) (*state & 0x7f) << j;
+			state++;
+		}
+		grid->blocks[i] = walls | (b << LEFT_WALL_WIDTH);
+	}
 }
 
 void enter_tetfield(struct tetfield *f, int piece, int col)

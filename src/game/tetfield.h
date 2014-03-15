@@ -15,8 +15,12 @@
 /* time until first drop */
 #define SPAWN_GRAVITY	15
 
+/* conservative maximum size of saved tetgrid */
+#define TETGRID_STATE_SIZE (sizeof(blocks_row) * PLAYFIELD_HEIGHT)
+
 /* grid of occupied cells */
 struct tetgrid {
+	int cols;
 	blocks_row blocks[PLAYFIELD_HEIGHT];
 };
 
@@ -29,7 +33,16 @@ struct tetfield {
 	unsigned char timeout[END_ACTION + 1];
 };
 
+/* initialize grid of width cols (excluding walls) */
 void init_tetgrid(struct tetgrid *, int cols);
+
+/* save tetgrid to state as a null-terminated byte string,
+   starting from given row index, copying at most TETGRID_STATE_SIZE bytes.
+   return number of bytes copied */
+int save_tetgrid(const struct tetgrid *, int row, unsigned char *state);
+
+/* load tetgrid from state (initialize first) */
+void load_tetgrid(struct tetgrid *, int row, const unsigned char *state);
 
 /* init next tetromino */
 void enter_tetfield(struct tetfield *, int piece, int col);
