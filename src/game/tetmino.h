@@ -60,6 +60,9 @@ void xor_tetmino(const struct tetmino *, blocks_row *);
    return when height max is reached */
 int drop_height(const struct tetmino *, const blocks_row *, int max);
 
+/* check collision moving blocks down 1 row from above */
+int has_blocks_above(const struct tetmino *, const blocks_row *);
+
 enum action {
 	NO_ACTION,
 	ROTATE_CW,
@@ -79,3 +82,6 @@ int control_tetmino(struct tetmino *, const blocks_row *, enum action);
    gravity (or softdrop speed) is number of frames to count down.
    return number of rows dropped */
 int update_tetmino(struct tetmino *, const blocks_row *, int gravity);
+
+/* prevent floating piece */
+void unfloat_tetmino(struct tetmino *, const blocks_row *);

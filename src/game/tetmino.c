@@ -59,6 +59,26 @@ int drop_height(const struct tetmino *t, const blocks_row *blocks, int max)
 	return h;
 }
 
+int has_blocks_above(const struct tetmino *t, const blocks_row *blocks)
+{
+	unsigned shape = t->shape;
+	unsigned row_mask = (1 << PIECE_WIDTH) - 1;
+	unsigned rows[PIECE_HEIGHT];
+	int i;
+	for (i = PIECE_HEIGHT; i > 0; i--) {
+		rows[i-1] = shape & row_mask;
+		shape >>= PIECE_WIDTH;
+	}
+	for (; i < PIECE_HEIGHT; i++) {
+		/* check to avoid out of bounds on highest row in blocks */
+		if (rows[i]) {
+			if (rows[i] & (blocks[t->row + i + 1] >> t->col))
+				return i + 1;
+		}
+	}
+	return 0;
+}
+
 /* doesn't handle the I piece! */
 static int floor_kick(struct tetmino *t, unsigned rotated, unsigned box)
 {
@@ -180,19 +200,15 @@ int control_tetmino(struct tetmino *t, const blocks_row *blocks, enum action a)
 
 int update_tetmino(struct tetmino *t, const blocks_row *blocks, int gravity)
 {
-	int dropped;
+	int num_rows, dropped;
 
+	unfloat_tetmino(t, blocks);
 	if (!t->falling) {
-		/* prevent floating piece */
-		t->falling = drop_height(t, blocks, 1);
-
-		if (!t->falling) {
-			if (t->lock_delay_move > 0)
-				t->lock_delay_move--;
-			if (t->lock_delay_step > 0)
-				t->lock_delay_step--;
-			return 0;
-		}
+		if (t->lock_delay_move > 0)
+			t->lock_delay_move--;
+		if (t->lock_delay_step > 0)
+			t->lock_delay_step--;
+		return 0;
 	}
 
 	if (t->falling > gravity)
@@ -205,10 +221,11 @@ int update_tetmino(struct tetmino *t, const blocks_row *blocks, int gravity)
 			return 0;
 	}
 	/* if negative, drop many rows */
-	dropped = drop(t, blocks, 1 - t->falling);
+	num_rows = 1 - t->falling;
+	dropped = drop(t, blocks, num_rows);
 
 	/* test hit ground */
-	if (dropped < 1 - t->falling) {
+	if (dropped < num_rows) {
 		t->falling = 0;
 		t->lock_delay_move = LOCK_DELAY_MOVE;
 		t->lock_delay_step = LOCK_DELAY_STEP;
@@ -220,4 +237,10 @@ int update_tetmino(struct tetmino *t, const blocks_row *blocks, int gravity)
 		t->floor_reached = t->row;
 
 	return dropped;
+}
+
+void unfloat_tetmino(struct tetmino *t, const blocks_row *blocks)
+{
+	if (!t->falling)
+		t->falling = drop_height(t, blocks, 1);
 }
