@@ -9,7 +9,7 @@ then
 
     name=`sed '1!d;s/^\[//;s/\]$//' lib.txt`
     echo "$name.a: "'$(OBJS)'
-    echo -e "\tar rs $name.a "'$(OBJS)'
+    echo -e "\t\$(AR) rs $name.a "'$(OBJS)'
     echo
 
     for line in `sed -e '/^[a-z]/!d;s/ /:/g;s/,/ /g' lib.txt`

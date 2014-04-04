@@ -2,7 +2,7 @@ CCFLAGS = $(CFLAGS) $(CPPFLAGS)
 CONFIG_PREFIX = ..
 
 textgfx.a: $(OBJS)
-	ar rs textgfx.a $(OBJS)
+	$(AR) rs textgfx.a $(OBJS)
 
 textgfx.o: textgfx.c textgfx.h ../terminal/terminal.h
 	$(CC) $(CCFLAGS) -I../terminal -c textgfx.c

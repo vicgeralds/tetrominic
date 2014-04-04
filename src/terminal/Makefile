@@ -2,7 +2,7 @@ CCFLAGS = $(CFLAGS) $(CPPFLAGS)
 CONFIG_PREFIX = ..
 
 terminal.a: $(OBJS)
-	ar rs terminal.a $(OBJS)
+	$(AR) rs terminal.a $(OBJS)
 
 terminal.o: terminal.c terminal.h
 	$(CC) $(CCFLAGS) -c terminal.c

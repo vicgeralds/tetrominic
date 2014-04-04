@@ -7,6 +7,7 @@
 #elif UNIX
 #include <unistd.h>
 #include <sys/ioctl.h>
+#include <termios.h>
 #endif
 #include "terminal.h"
 
