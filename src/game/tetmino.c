@@ -10,6 +10,12 @@ unsigned short tetmino_shapes[7][4] = {
 	{TETMINO_J, TETMINO_J2, TETMINO_J3, TETMINO_J4}
 };
 
+int tetmino_has_row(unsigned shape, int i)
+{
+	int shift = (PIECE_HEIGHT - 1 - i) * PIECE_WIDTH;
+	return (shape >> shift) % (1 << PIECE_WIDTH);
+}
+
 /* get mask to test collision */
 static unsigned get_blocks_box(const blocks_row *blocks, int col)
 {
@@ -37,6 +43,11 @@ void xor_tetmino(const struct tetmino *t, blocks_row *blocks)
 	xor_blocks_box(blocks + t->row, t->col, t->shape);
 }
 
+int can_move_tetmino(const struct tetmino *t, const blocks_row *blocks, int d)
+{
+	return !(t->shape & get_blocks_box(blocks + t->row, t->col + d));
+}
+
 int drop_height(const struct tetmino *t, const blocks_row *blocks, int max)
 {
 	int h = 0;
@@ -59,24 +70,23 @@ int drop_height(const struct tetmino *t, const blocks_row *blocks, int max)
 	return h;
 }
 
-int has_blocks_above(const struct tetmino *t, const blocks_row *blocks)
+int has_blocks_above(const struct tetmino *t, const blocks_row *blocks, int row0)
 {
 	unsigned shape = t->shape;
 	unsigned row_mask = (1 << PIECE_WIDTH) - 1;
-	unsigned rows[PIECE_HEIGHT];
-	int i;
-	for (i = PIECE_HEIGHT; i > 0; i--) {
-		rows[i-1] = shape & row_mask;
+	int ret = 0;
+	int row = t->row + PIECE_HEIGHT;
+
+	for (; shape && row > row0; row--) {
+		unsigned shape1 = shape & row_mask;
 		shape >>= PIECE_WIDTH;
-	}
-	for (; i < PIECE_HEIGHT; i++) {
 		/* check to avoid out of bounds on highest row in blocks */
-		if (rows[i]) {
-			if (rows[i] & (blocks[t->row + i + 1] >> t->col))
-				return i + 1;
+		if (shape1) {
+			if (shape1 & (blocks[row] >> t->col))
+				ret = row;
 		}
 	}
-	return 0;
+	return ret;
 }
 
 /* doesn't handle the I piece! */
@@ -164,12 +174,10 @@ int control_tetmino(struct tetmino *t, const blocks_row *blocks, enum action a)
 		moved = rotate(t, blocks + t->row, 3);
 		break;
 	case MOVE_RIGHT:
-		t->col += (moved = !(t->shape & get_blocks_box(blocks + t->row,
-							       t->col + 1)));
+		t->col += (moved = can_move_tetmino(t, blocks, 1));
 		break;
 	case MOVE_LEFT:
-		t->col -= (moved = !(t->shape & get_blocks_box(blocks + t->row,
-							       t->col - 1)));
+		t->col -= (moved = can_move_tetmino(t, blocks, -1));
 		break;
 	case HARDDROP:
 		dropped = drop(t, blocks, t->row);

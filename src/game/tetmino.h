@@ -53,15 +53,23 @@ struct tetmino {
 	int floor_reached;	/* floor kick state */
 };
 
+/* extract one row from shape, counting from bottom */
+int tetmino_has_row(unsigned shape, int i);
+
 /* toggle piece occupied grid cells */
 void xor_tetmino(const struct tetmino *, blocks_row *);
+
+/* check collision when moving right (d>0) or moving left (d<0) */
+int can_move_tetmino(const struct tetmino *, const blocks_row *, int d);
 
 /* get distance to the blocks below.
    return when height max is reached */
 int drop_height(const struct tetmino *, const blocks_row *, int max);
 
-/* check collision moving blocks down 1 row from above */
-int has_blocks_above(const struct tetmino *, const blocks_row *);
+/* check collision moving blocks down 1 row from above,
+   testing blocks in rows above row0.
+   return row number of collision or 0 */
+int has_blocks_above(const struct tetmino *, const blocks_row *, int row0);
 
 enum action {
 	NO_ACTION,
