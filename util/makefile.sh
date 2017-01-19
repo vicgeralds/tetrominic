@@ -9,7 +9,8 @@ then
 
     name=`sed '1!d;s/^\[//;s/\]$//' lib.txt`
     echo "$name.a: "'$(OBJS)'
-    echo -e "\t\$(AR) rs $name.a "'$(OBJS)'
+    printf '\t$(AR) rs '
+    echo "$name.a "'$(OBJS)'
     echo
 
     for line in `sed -e '/^[a-z]/!d;s/ /:/g;s/,/ /g' lib.txt`
@@ -49,13 +50,16 @@ then
         fi
 
         echo $name.o: $name.c $hfiles
-        echo -e "\t$command -c $name.c"
+        printf '\t'
+        echo "$command -c $name.c"
     done
 fi
 
 echo
 echo 'clean:'
-echo -e "\trm -f *.o"
-echo -e "\trm -f *.a"
+printf '\trm -f *.o'
+echo
+printf '\trm -f *.a'
+echo
 echo
 echo '.PHONY: clean'
