@@ -1,4 +1,3 @@
-#include <string.h>
 #include "tetmino.h"
 #include "tetfield.h"
 
@@ -6,6 +5,8 @@ void init_tetgrid(struct tetgrid *grid, int cols)
 {
 	int i;
 	grid->cols = cols;
+	grid->clearing = 0;
+	grid->delay = 0;
 	grid->blocks[0] = MAKE_FLOOR(cols);
 	for (i=1; i < PLAYFIELD_HEIGHT; i++)
 		grid->blocks[i] = MAKE_WALLS(cols);
@@ -19,19 +20,23 @@ static int is_empty_row(const struct tetgrid *grid, int row)
 
 void enter_tetfield(struct tetfield *f, int piece, int col)
 {
-	f->mino.shape = 0;
+	f->mino.shape = tetmino_shapes[piece][0];
 	f->mino.piece = piece;
 	f->mino.row = SPAWN_ROW + 1;	/* drop 1 row to test top out */
 	f->mino.col = col;
-	f->mino.falling = 1;
-	memset(f->timeout, SPAWN_DELAY + 1, END_ACTION);
+	f->mino.falling = SPAWN_DELAY + 1;
+	f->state = TETFIELD_SPAWN;
+	/* prevent last action from cancelling spawn delay */
+	f->timeout[f->last_action] = SPAWN_DELAY;
+	f->timeout[RETRY_ACTION] = 0;
+	f->timeout[END_ACTION] = 0;
 }
 
 static enum action make_move(struct tetfield *f, enum action a)
 {
-	if (f->timeout[a] == 0 && control_tetmino(&f->mino, f->grid->blocks, a)) {
-		f->charge = NO_ACTION;
-		f->timeout[NO_ACTION] = 0;
+	if (f->timeout[a] == 0 && control_tetmino(&f->mino, f->blocks, a)) {
+		f->last_action = a;
+		f->timeout[RETRY_ACTION] = 0;
 		f->timeout[a] = AUTOREPEAT_FRAMES;
 		return a;
 	}
@@ -40,57 +45,66 @@ static enum action make_move(struct tetfield *f, enum action a)
 
 static void dec_timeout(struct tetfield *f)
 {
-	int line_clear_delayed = f->grid->clearing && !f->mino.shape;
 	int i;
 	for (i=0; i < END_ACTION; i++) {
 		if (f->timeout[i])
 			f->timeout[i]--;
-		/* stop spawn timer during line clear animation */
-		if (line_clear_delayed)
-			break;
 	}
 }
 
-static int update_gravity(struct tetfield *f)
+/* process moves before the piece is spawned */
+static void update_prespawn(struct tetfield *f, enum action a)
 {
-	int gravity = f->gravity;
-	/* set minimum frames until first drop */
-	if (f->mino.row >= SPAWN_ROW && gravity < SPAWN_GRAVITY)
-		gravity = SPAWN_GRAVITY;
-
-	if (!f->mino.shape) {
-		/* spawn delay */
-		if (f->timeout[ROTATE_CW])
-			return 0;
-		f->mino.shape = tetmino_shapes[f->mino.piece][0];
-		f->mino.falling = 0;
-
-		/* discard drops during spawn delay */
-		if (f->charge == HARDDROP || f->charge == SOFTDROP)
-			f->charge = NO_ACTION;
+	if (!f->timeout[a]) {
+		switch (a) {
+		case ROTATE_CW:
+			f->mino.shape = tetmino_shapes[f->mino.piece][1];
+			break;
+		case ROTATE_CCW:
+			f->mino.shape = tetmino_shapes[f->mino.piece][3];
+			break;
+		case MOVE_RIGHT:
+		case MOVE_LEFT:
+		case HARDDROP:
+		case SOFTDROP:
+			f->timeout[f->last_action] = 0;
+			f->last_action = a;
+			f->timeout[RETRY_ACTION] = 3;
+			break;
+		default:
+			break;
+		}
 	}
-	return update_tetmino(&f->mino, f->grid->blocks, gravity);
+}
+
+/* initial rotation */
+static enum action spawn_orient(struct tetfield *f)
+{
+	unsigned unrotated = tetmino_shapes[f->mino.piece][0];
+	if (f->mino.shape != unrotated) {
+		if (drop_height(&f->mino, f->blocks, 1))
+			return (f->mino.shape == tetmino_shapes[f->mino.piece][1]) ?
+				ROTATE_CW : ROTATE_CCW;
+		f->mino.shape = unrotated;
+	}
+	return NO_ACTION;
 }
 
 static void update_move(struct tetfield *f, enum action a, struct changed *out)
 {
-	/* timeout[NO_ACTION] is number of times to retry charged action */
-	if (f->timeout[NO_ACTION] == 0)
-		f->charge = NO_ACTION;
-
 	if (f->timeout[a]) {
-		out->moved = make_move(f, f->charge);
+		if (f->timeout[RETRY_ACTION])
+			out->moved = make_move(f, f->last_action);
 		if (a != NO_ACTION) {
-			f->charge = a;
-			f->timeout[NO_ACTION] = AUTOREPEAT_FRAMES;
+			f->last_action = a;
+			f->timeout[RETRY_ACTION] = AUTOREPEAT_FRAMES;
 		}
 	} else if ((out->moved = make_move(f, a)) == NO_ACTION) {
-		f->charge = a;
-		f->timeout[NO_ACTION] = WALL_CHARGE_FRAMES;
+		f->last_action = a;
+		f->timeout[RETRY_ACTION] = WALL_CHARGE_FRAMES;
 	}
 
-	dec_timeout(f);
-	out->dropped = update_gravity(f);
+	out->dropped = update_tetmino(&f->mino, f->blocks, f->gravity);
 }
 
 static int is_movable(const struct tetmino *t)
@@ -101,7 +115,7 @@ static int is_movable(const struct tetmino *t)
 /* check that there are no unfinished line clears at occupied rows */
 static int is_lockable(const struct tetfield *f)
 {
-	const blocks_row *blocks = f->grid->blocks + f->mino.row;
+	const blocks_row *blocks = f->blocks + f->mino.row;
 	int i;
 	for (i=0; i < PIECE_HEIGHT; i++) {
 		if (!(blocks[i] & LINE_CLEAR_MARK) && tetmino_has_row(f->mino.shape, i))
@@ -110,31 +124,64 @@ static int is_lockable(const struct tetfield *f)
 	return 1;
 }
 
-int run_tetfield(struct tetfield *f, enum action a, struct changed *out)
+int run_tetfield(struct tetfield *f, struct tetgrid *grid,
+		      enum action a, struct changed *out)
 {
-	/* accepting no more actions */
-	if (!is_movable(&f->mino)) {
-		out->moved = NO_ACTION;
-		out->dropped = control_tetmino(&f->mino, f->grid->blocks, HARDDROP);
-		return !is_lockable(f);
+	dec_timeout(f);
+	out->moved = NO_ACTION;
+	out->dropped = 0;
+	out->displaced = 0;
+
+	switch (f->state) {
+	case TETFIELD_SPAWN:
+		update_prespawn(f, a);
+
+		if (!f->timeout[RETRY_ACTION]) {
+			/* stop spawn timer during line clear animation */
+			if (grid->clearing) return 1;
+
+			f->mino.falling--;
+			if (f->mino.falling > 1) return 1;
+		}
+
+		f->mino.falling = 1;
+		out->moved = spawn_orient(f);
+		out->dropped = update_tetmino(&f->mino, f->blocks, f->gravity);
+		if (!out->dropped) {
+			f->state = TETFIELD_TOP_OUT;
+			return 0;
+		}
+		f->state = TETFIELD_MOVE;
+		break;
+	case TETFIELD_MOVE:
+		update_move(f, a, out);
+		break;
+	case TETFIELD_PLACED:
+		/* accepting no more actions */
+		out->dropped = control_tetmino(&f->mino, f->blocks, HARDDROP);
+		break;
+	case TETFIELD_TOP_OUT:
+		return 0;
 	}
 
-	if (f->other) {
-		xor_tetmino(f->other, f->grid->blocks);
-		update_move(f, a, out);
-		xor_tetmino(f->other, f->grid->blocks);
-	} else {
-		update_move(f, a, out);
+	/* resolve collision upwards */
+	while (!can_move_tetmino(&f->mino, f->blocks, 0)) {
+		if (f->mino.row >= SPAWN_ROW) {
+			f->state = TETFIELD_TOP_OUT;
+			return 0;
+		}
+		f->mino.row++;
+		out->displaced = 1;
 	}
-	unfloat_tetmino(&f->mino, f->grid->blocks);
+	unfloat_tetmino(&f->mino, grid->blocks);
 
 	/* return 0 on lock condition */
-	return is_movable(&f->mino) || !is_lockable(f);
+	return is_movable(&f->mino) || (f->state = TETFIELD_PLACED, !is_lockable(f));
 }
 
-int lock_tetfield(struct tetfield *f)
+int lock_tetfield(struct tetfield *f, struct tetgrid *grid)
 {
-	blocks_row *blocks = f->grid->blocks;
+	blocks_row *blocks = grid->blocks;
 	int num_lines_cleared = 0;
 	int i;
 
@@ -149,8 +196,8 @@ int lock_tetfield(struct tetfield *f)
 			num_lines_cleared++;
 			/* init line clear */
 			blocks[i] ^= LINE_CLEAR_MARK;
-			f->grid->clearing++;
-			f->grid->delay += BLOCK_CLEAR_DELAY;
+			grid->clearing++;
+			grid->delay += BLOCK_CLEAR_DELAY;
 		}
 	}
 	return num_lines_cleared;
@@ -219,43 +266,10 @@ int next_cleared_row(const struct tetgrid *grid, int row)
 	return row;
 }
 
-/* check for collision with piece when removing row */
-static int check_remove(const struct tetmino *piece,
-			const struct tetgrid *grid, int row, int end)
+void remove_cleared_row(struct tetgrid *grid, int row)
 {
-	if (piece) {
-		int stuck = has_blocks_above(piece, grid->blocks, row);
-		if (stuck && stuck < end) {
-			if (row + 1 < stuck || is_movable(piece))
-				return stuck;
-			else
-				/* no movable rows and piece can't lock */
-				return 0;
-		}
-	}
-	return end;
-}
-
-int remove_cleared_row(struct tetgrid *grid, int row,
-			const struct tetmino *piece1,
-			const struct tetmino *piece2)
-{
-	/* determine range of movable blocks */
-	int end;
-	end = check_remove(piece1, grid, row, PLAYFIELD_HEIGHT);
-	end = check_remove(piece2, grid, row, end);
-
-	for (; row + 1 < end; row++)
+	for (; row + 1 < PLAYFIELD_HEIGHT; row++)
 		grid->blocks[row] = grid->blocks[row + 1];
 
-	/* set to empty row */
-	grid->blocks[row] = MAKE_WALLS(grid->cols);
-
-	if (end < PLAYFIELD_HEIGHT && (end || next_cleared_row(grid, row) > 0))
-		/* try to remove row later */
-		grid->blocks[row] ^= LINE_CLEAR_MARK;
-	else
-		grid->clearing--;
-
-	return row;
+	grid->clearing--;
 }

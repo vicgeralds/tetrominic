@@ -11,9 +11,7 @@
 #define SPAWN_ROW (PLAYFIELD_HEIGHT - 5)
 
 /* time until appearance of next tetromino */
-#define SPAWN_DELAY	10
-/* time until first drop */
-#define SPAWN_GRAVITY	15
+#define SPAWN_DELAY	25
 
 /* time between line clear animation steps */
 #define BLOCK_CLEAR_DELAY 5
@@ -25,24 +23,33 @@
 struct tetgrid {
 	int cols;
 	int clearing;	/* number of lines being cleared */
-	int delay;
+	int delay;	/* time until next update */
 	blocks_row blocks[PLAYFIELD_HEIGHT];
 };
 
 /* a tetromino piece in a playfield */
 struct tetfield {
 	struct tetmino mino;
-	struct tetgrid *grid;
-	const struct tetmino *other;	/* other piece sharing the grid */
+	const blocks_row *blocks;
 	int gravity;
-	enum action charge;
+	enum {
+		TETFIELD_SPAWN,
+		TETFIELD_MOVE,
+		TETFIELD_PLACED,
+		TETFIELD_TOP_OUT
+	} state;
+	enum action last_action;
 	unsigned char timeout[END_ACTION + 1];
 };
+
+/* timeout[NO_ACTION] is number of times to retry last action */
+#define RETRY_ACTION	NO_ACTION
 
 /* indicate what has changed since the last frame */
 struct changed {
 	enum action moved;	/* changed position or orientation */
 	int dropped;		/* number of rows auto-dropped */
+	int displaced;		/* collision resolved */
 };
 
 /* initialize grid of width cols (excluding walls) */
@@ -53,11 +60,11 @@ void enter_tetfield(struct tetfield *, int piece, int col);
 
 /* advance one frame.
    return 0 on lock condition */
-int run_tetfield(struct tetfield *, enum action, struct changed *out);
+int run_tetfield(struct tetfield *, struct tetgrid *, enum action, struct changed *out);
 
 /* lock tetromino into place and init line clear.
    return number of lines cleared */
-int lock_tetfield(struct tetfield *);
+int lock_tetfield(struct tetfield *, struct tetgrid *);
 
 /* clear blocks and process line clear gravity.
    return row number of cleared blocks */
@@ -72,9 +79,5 @@ blocks_row get_cleared_blocks(const struct tetgrid *, int row);
    return row number > 0 until done */
 int next_cleared_row(const struct tetgrid *, int row);
 
-/* remove one row from the grid, moving rows above it down by 1.
-   piece1 and piece2 are checked for collisions if they are not null.
-   return row number of empty row above the range of moved rows */
-int remove_cleared_row(struct tetgrid *, int row,
-			const struct tetmino *piece1,
-			const struct tetmino *piece2);
+/* remove one row from the grid, moving rows above it down by 1 */
+void remove_cleared_row(struct tetgrid *, int row);

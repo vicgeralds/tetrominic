@@ -40,7 +40,7 @@ typedef unsigned short blocks_row;
 #define MAKE_WALLS(cols) ((blocks_row) (-1) ^ MAKE_FLOOR(cols))
 
 /* timer presets */
-#define LOCK_DELAY_MOVE 10
+#define LOCK_DELAY_MOVE 20
 #define LOCK_DELAY_STEP 30
 
 struct tetmino {
@@ -50,7 +50,7 @@ struct tetmino {
 	int falling;		/* gravity timer */
 	int lock_delay_move;	/* move reset timer */
 	int lock_delay_step;	/* step reset timer */
-	int floor_reached;	/* floor kick state */
+	int climbed;		/* floor kick state */
 };
 
 /* extract one row from shape, counting from bottom */
@@ -59,7 +59,7 @@ int tetmino_has_row(unsigned shape, int i);
 /* toggle piece occupied grid cells */
 void xor_tetmino(const struct tetmino *, blocks_row *);
 
-/* check collision when moving right (d>0) or moving left (d<0) */
+/* check collision when moving right by d columns (or left if d<0) */
 int can_move_tetmino(const struct tetmino *, const blocks_row *, int d);
 
 /* get distance to the blocks below.

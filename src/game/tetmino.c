@@ -65,6 +65,7 @@ int drop_height(const struct tetmino *t, const blocks_row *blocks, int max)
 			box = (box >> PIECE_WIDTH) |
 			      (blocks[-h] >> t->col
 			       << (PIECE_HEIGHT-1) * PIECE_WIDTH);
+			box &= (1U << PIECE_HEIGHT * PIECE_WIDTH) - 1;
 		}
 	}
 	return h;
@@ -93,8 +94,8 @@ int has_blocks_above(const struct tetmino *t, const blocks_row *blocks, int row0
 static int floor_kick(struct tetmino *t, unsigned rotated, unsigned box)
 {
 	if ((rotated & box) >> (PIECE_HEIGHT-1) * PIECE_WIDTH &&
-	    !(rotated & (box << PIECE_WIDTH)) && t->floor_reached >= t->row) {
-		t->floor_reached = t->row;
+	    !(rotated & (box << PIECE_WIDTH)) && !t->climbed) {
+		t->climbed = 1;
 		t->row++;
 		return 1;
 	}
@@ -109,11 +110,15 @@ static int wall_kick(struct tetmino *t, unsigned rotated, unsigned box,
 		 mask3 = TETMINO_I2 << 1;	/* right column */
 	int	n = 0;
 
-	/* kick if exactly one of the columns overlaps */
-	if (overlap == (overlap & mask1))
-		n = 1;
-	if (overlap == (overlap & mask3))
-		n = -1;
+	if (rotated == TETMINO_I)
+		n = (t->shape == TETMINO_I2) ? -1 : 1;
+	else {
+		/* kick if exactly one of the columns overlaps */
+		if (overlap == (overlap & mask1))
+			n = 1;
+		if (overlap == (overlap & mask3))
+			n = -1;
+	}
 
 	if (n && !(rotated & get_blocks_box(blocks, t->col + n))) {
 		t->col += n;
@@ -159,6 +164,9 @@ static int drop(struct tetmino *t, const blocks_row *blocks, int n)
 {
 	int h = drop_height(t, blocks, n);
 	t->row -= h;
+	t->climbed -= h;
+	if (t->climbed < 0)
+		t->climbed = 0;
 	return h;
 }
 
@@ -200,16 +208,22 @@ int control_tetmino(struct tetmino *t, const blocks_row *blocks, enum action a)
 		t->lock_delay_move = LOCK_DELAY_MOVE + 1;
 
 		/* floor kicked - prevent "infinite spin" */
-		if (t->floor_reached < t->row)
-			drop(t, blocks, 1);
+		drop(t, blocks, t->climbed);
 	}
 	return moved | dropped;
 }
 
+static void init_lock_delay(struct tetmino *t, int gravity)
+{
+	/* shorter initial lock delay at slower speeds */
+	int lock_delay = LOCK_DELAY_MOVE - gravity;
+	t->lock_delay_step = LOCK_DELAY_STEP;
+	if (lock_delay > t->lock_delay_move)
+		t->lock_delay_move = lock_delay;
+}
+
 int update_tetmino(struct tetmino *t, const blocks_row *blocks, int gravity)
 {
-	int num_rows, dropped;
-
 	unfloat_tetmino(t, blocks);
 	if (!t->falling) {
 		if (t->lock_delay_move > 0)
@@ -223,28 +237,18 @@ int update_tetmino(struct tetmino *t, const blocks_row *blocks, int gravity)
 		t->falling = gravity;
 
 	/* count down frames until drop */
-	if (t->falling > 0) {
-		t->falling--;
-		if (t->falling)
-			return 0;
-	}
-	/* if negative, drop many rows */
-	num_rows = 1 - t->falling;
-	dropped = drop(t, blocks, num_rows);
+	t->falling--;
+	if (t->falling > 0)
+		return 0;
 
-	/* test hit ground */
-	if (dropped < num_rows) {
-		t->falling = 0;
-		t->lock_delay_move = LOCK_DELAY_MOVE;
-		t->lock_delay_step = LOCK_DELAY_STEP;
-	} else {
+	if (drop(t, blocks, 1)) {
 		t->falling = gravity;
+		return 1;
+	} else {
+		t->falling = 0;
+		init_lock_delay(t, gravity);
+		return 0;
 	}
-
-	if (dropped)
-		t->floor_reached = t->row;
-
-	return dropped;
 }
 
 void unfloat_tetmino(struct tetmino *t, const blocks_row *blocks)
