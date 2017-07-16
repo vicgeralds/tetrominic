@@ -9,7 +9,9 @@ void set_input_mode()
 	struct termios attr;
 	tcgetattr(STDIN_FILENO, &saved_term_attr);
 	tcgetattr(STDIN_FILENO, &attr);
-	attr.c_lflag &= ~(ICANON|ECHO);
+	/* set noncanonical mode and disable echoing */
+	attr.c_lflag &= ~(ICANON|ECHO|ECHONL);
+	/* read with timeout (0.2 seconds) */
 	attr.c_cc[VMIN] = 0;
 	attr.c_cc[VTIME] = 2;
 	tcsetattr(STDIN_FILENO, TCSADRAIN, &attr);
