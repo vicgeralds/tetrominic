@@ -8,8 +8,6 @@ terminal.o: terminal.c terminal.h
 	$(CC) $(CCFLAGS) -c terminal.c
 termsize.o: termsize.c $(CONFIG_PREFIX)/config/conio.h $(CONFIG_PREFIX)/config/os.h terminal.h
 	$(CC) $(CCFLAGS) -I$(CONFIG_PREFIX) -c termsize.c
-termtype.o: termtype.c terminal.h
-	$(CC) $(CCFLAGS) -c termtype.c
 inputmode.o: inputmode.c terminal.h
 	$(CC) $(CCFLAGS) -c inputmode.c
 textout.o: textout.c terminal.h

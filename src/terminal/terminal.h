@@ -5,17 +5,10 @@
 
 #include <stdio.h>
 
-#define XTERM      1
-#define LINUX_TERM 2
-#define GNOME_TERM 4
-#define CYGWIN     8
-
 struct terminal {
 	unsigned short width;
 	unsigned short height;
-	unsigned short type;
 	FILE *out;
-	char *wm_class[2];		/* window name and class */
 	void (*hide_cursor)();
 	void (*show_cursor)();
 	int  (*has_focus)();
@@ -26,12 +19,11 @@ extern struct terminal terminal;
 /* init terminal structure */
 void init_terminal();
 
+/* update terminal.width and terminal.height */
 void gettermsize();
-void gettermtype();
 
-/* connect to X and get focus detection and window info:
-	wm_class[2]	e.g. {"xterm", "XTerm"}
-	has_focus()	returns 0 if top-level window loses focus
+/* connect to X and get focus detection.
+   terminal.has_focus() returns 0 if top-level window loses focus
 */
 void xwindow_init();
 void xwindow_exit();

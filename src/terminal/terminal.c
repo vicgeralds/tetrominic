@@ -23,8 +23,6 @@ static int yes() { return 1; }
 void init_terminal()
 {
 	terminal.out = stdout;
-	terminal.wm_class[0] = "";
-	terminal.wm_class[1] = "";
 	terminal.hide_cursor = hide_cursor;
 	terminal.show_cursor = show_cursor;
 	terminal.has_focus = yes;

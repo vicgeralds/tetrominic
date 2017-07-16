@@ -1,7 +1,6 @@
 [terminal]
 terminal
 termsize
-termtype
 inputmode if=unix
 textout
 xwindow if=xlib
