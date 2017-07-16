@@ -3,7 +3,5 @@ terminal
 termsize
 termtype
 inputmode if=unix
-acs
 textout
-charenc
 xwindow if=xlib

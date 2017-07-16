@@ -10,29 +10,10 @@
 #define GNOME_TERM 4
 #define CYGWIN     8
 
-enum charenc {
-	CHAR_ASCII,
-	CHAR_ISO8859_1,
-	CHAR_CP850,
-	CHAR_CP437,
-	CHAR_UTF8
-};
-
-/* how to do line drawing */
-enum acs {
-	ACS_ASCII,
-	ACS_VT100,	/* switch to ACS */
-	ACS_IBM,	/* use codepage graphics */
-	ACS_UNICODE
-};
-
 struct terminal {
 	unsigned short width;
 	unsigned short height;
 	unsigned short type;
-	enum charenc charenc;
-	enum acs     acs;
-	const char  *acs_disabled;	/* set of disabled characters */
 	FILE *out;
 	char *wm_class[2];		/* window name and class */
 	void (*hide_cursor)();
@@ -64,53 +45,9 @@ void tputstr(const char *s);
 int  tprintf(const char *format, ...);
 
 /* use the alt char set (line drawing) */
-void init_acs_caps();
-void set_acs_table();
 void tputacs(const char *s);
 
-/* enable conversion to terminal.charenc */
-void set_latin1_codepage();
-
-/* put iso8859-1 string */
+/* put cp437 string using the current locale */
 void tputtext(const char *s);
-
-/* put unicode character (cast to unsigned char if < 0) */
-void tputchar(int c);
-
-/* Internal routines and tables for converting characters. */
-
-extern const char acs_vt100[];
-extern const char acs_ascii[];
-extern const char acs_cp437[];
-extern const unsigned short acs_unicode[];
-
-extern const char latin1_ascii[96];
-extern const char latin1_cp850[96];
-extern const char latin1_cp437[96];
-
-/* example: set_char_table(acs_vt100, acs_ascii) */
-void set_char_table(const char *set1, const char *set2);
-
-/* example: set_acs_unicode_table(acs_vt100, acs_unicode) */
-void set_acs_unicode_table(const char *set1, const unsigned short *set2);
-
-/* set ascii or codepage conversion table for latin-1 supplement A0-FF */
-void set_latin1_table(const char *table);
-
-/* replace mappings to C0 control codes with safe ones */
-void replace_codepage_c0();
-
-/* convert using char table, to buf of size n.
-   returns length of string stored in buf == strlen(buf) < n */
-int convert_chars(const char *s, char *buf, int n);
-
-/* typical use: uc_min=0xA0 */
-int convert_chars_hi(const char *s, char *buf, int n, unsigned uc_min);
-
-int acs_to_unicode(int c);
-
-/* Encode one character to UTF-8 and return the number of bytes used.
-   Max 3 bytes -- from U+0000 to U+FFFF. */
-int setc_utf8(char *s, unsigned uc);
 
 #endif

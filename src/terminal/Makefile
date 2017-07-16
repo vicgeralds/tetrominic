@@ -12,12 +12,8 @@ termtype.o: termtype.c terminal.h
 	$(CC) $(CCFLAGS) -c termtype.c
 inputmode.o: inputmode.c terminal.h
 	$(CC) $(CCFLAGS) -c inputmode.c
-acs.o: acs.c terminal.h
-	$(CC) $(CCFLAGS) -c acs.c
 textout.o: textout.c terminal.h
 	$(CC) $(CCFLAGS) -c textout.c
-charenc.o: charenc.c terminal.h
-	$(CC) $(CCFLAGS) -c charenc.c
 xwindow.o: xwindow.c terminal.h
 	$(CC) $(CCFLAGS) $(XLIB_INC) -c xwindow.c
 

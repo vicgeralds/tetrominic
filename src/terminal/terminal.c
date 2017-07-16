@@ -2,7 +2,18 @@
 #include <stdarg.h>
 #include "terminal.h"
 
-struct terminal terminal = {80, 25, 0, CHAR_ASCII, ACS_ASCII, "hoprs0"};
+/* select the IBM PC alternate character set.
+ * This works in the linux console and makes it possible to switch to VT100
+ * graphics even in utf8 mode.
+ */
+#define SELECT_ALT_FONT	     "\033[11m"
+#define SELECT_PRIMARY_FONT  "\033[10m"
+
+/* select VT100 graphics mapping */
+#define SELECT_G0_VT100      "\033(0"
+#define SELECT_G0_DEFAULT    "\033(B"
+
+struct terminal terminal = {80, 25};
 
 static void hide_cursor() { tputstr("\033[?25l"); }
 static void show_cursor() { tputstr("\033[?25h"); }
@@ -32,4 +43,11 @@ int tprintf(const char *format, ...)
 	n = vfprintf(terminal.out, format, ap);
 	va_end(ap);
 	return n;
+}
+
+void tputacs(const char *s)
+{
+	tputstr(SELECT_ALT_FONT SELECT_G0_VT100);
+	tputstr(s);
+	tputstr(SELECT_G0_DEFAULT SELECT_PRIMARY_FONT);
 }
