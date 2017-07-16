@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include "terminal.h"
 
 void gettermtype()
@@ -13,7 +14,9 @@ void gettermtype()
 		else if (!strcmp(s, "cygwin"))
 			terminal.type = CYGWIN;
 	}
+	/* Gnome terminal no longer sets COLORTERM=gnome-terminal */
 	s = getenv("COLORTERM");
-	if (s && !strcmp(s, "gnome-terminal"))
+	if ((s && !strcmp(s, "gnome-terminal")) ||
+	    ((s = getenv("VTE_VERSION")) && isdigit(*s)))
 		terminal.type |= GNOME_TERM;
 }
