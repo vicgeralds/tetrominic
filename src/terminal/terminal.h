@@ -11,7 +11,6 @@ struct terminal {
 	FILE *out;
 	void (*hide_cursor)();
 	void (*show_cursor)();
-	int  (*has_focus)();
 };
 
 extern struct terminal terminal;
@@ -21,12 +20,6 @@ void init_terminal();
 
 /* update terminal.width and terminal.height */
 void gettermsize();
-
-/* connect to X and get focus detection.
-   terminal.has_focus() returns 0 if top-level window loses focus
-*/
-void xwindow_init();
-void xwindow_exit();
 
 /* terminal non-canonical mode */
 void set_input_mode();

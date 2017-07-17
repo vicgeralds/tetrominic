@@ -12,8 +12,6 @@ inputmode.o: inputmode.c terminal.h
 	$(CC) $(CCFLAGS) -c inputmode.c
 textout.o: textout.c terminal.h
 	$(CC) $(CCFLAGS) -c textout.c
-xwindow.o: xwindow.c terminal.h
-	$(CC) $(CCFLAGS) $(XLIB_INC) -c xwindow.c
 
 clean:
 	rm -f *.o

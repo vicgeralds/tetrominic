@@ -3,4 +3,3 @@ terminal
 termsize
 inputmode if=unix
 textout
-xwindow if=xlib

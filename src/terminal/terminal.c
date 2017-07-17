@@ -18,14 +18,11 @@ struct terminal terminal = {80, 25};
 static void hide_cursor() { tputstr("\033[?25l"); }
 static void show_cursor() { tputstr("\033[?25h"); }
 
-static int yes() { return 1; }
-
 void init_terminal()
 {
 	terminal.out = stdout;
 	terminal.hide_cursor = hide_cursor;
 	terminal.show_cursor = show_cursor;
-	terminal.has_focus = yes;
 }
 
 void tputstr(const char *s)
