@@ -1,5 +1,0 @@
-[terminal]
-terminal
-termsize
-inputmode if=unix
-textout

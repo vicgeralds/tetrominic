@@ -1,5 +1,5 @@
 CCFLAGS = $(CFLAGS) $(CPPFLAGS)
-CONFIG_PREFIX = ..
+OBJS = textgfx.o ansi.o draw.o layout.o bitmap.o
 
 textgfx.a: $(OBJS)
 	$(AR) rs textgfx.a $(OBJS)

@@ -1,7 +1,0 @@
-[textgfx]
-textgfx
-ansi
-draw
-layout
-bitmap
-acstext
