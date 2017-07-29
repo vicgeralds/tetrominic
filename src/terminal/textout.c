@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <wchar.h>
+#include <stdio.h>
 #include "terminal.h"
 
 static wchar_t cp437_unicode[128] = L""
@@ -63,6 +64,6 @@ void tputtext(const char *s)
 
 	while (*s) {
 		s += convert_text(s, buf, sizeof(buf));
-		tputstr(buf);
+		fputs(buf, stdout);
 	}
 }

@@ -1,5 +1,6 @@
 #include <string.h>
 #include "textgfx.h"
+#include "terminal.h"
 
 /* Alternate character set mapping to IBM graphics */
 

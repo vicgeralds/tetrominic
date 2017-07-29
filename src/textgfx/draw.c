@@ -1,11 +1,11 @@
 #include "textgfx.h"
+#include "terminal.h"
 
 typedef const struct tg_tiles *Tiles;
 
 void drawchar(int c, int attr, struct tg_buffer *line)
 {
-	if (attr != line->attr || (unsigned int)
-				  line->len >= sizeof(line->buf)-1) {
+	if (attr != line->attr || line->len >= sizeof(line->buf)-1) {
 		flush_tg(line);
 		line->attr = attr;
 	}
@@ -18,17 +18,16 @@ void flush_tg(struct tg_buffer *line)
 	int attr = line->attr;
 
 	if (len > 0) {
-		line->buf[len] = '\0';		/* no bounds check */
+		line->buf[len] = '\0';
 
 		moveto(line->x, line->y);
-		if (!(attr & DONT_CHANGE_ATTR))
-			set_text_attr(attr);
+		set_text_attr(attr);
 		if (attr & ALTCHARSET)
-			textgfx.putacs(line->buf);
+			terminal.putacs(line->buf);
 		else
-			textgfx.putstr(line->buf);
+			terminal.puttext(line->buf);
 
-		line->x = (textgfx.x += len);
+		line->x = (terminal.cursor_x += len);
 	}
 	line->len = 0;
 }
@@ -70,7 +69,7 @@ void drawacs(const char *s, int w, struct tg_buffer *line)
 		}
 
 		for (; repeat >= 0; repeat--) {
-			drawchar(c, ALTCHARSET | DONT_CHANGE_ATTR, line);
+			drawchar(c, ALTCHARSET | line->attr, line);
 			wrapcount--;
 			/* wrapcount < 0 if w is zero */
 			if (wrapcount == 0) {

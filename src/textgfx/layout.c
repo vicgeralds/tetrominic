@@ -1,5 +1,6 @@
 #include <string.h>
 #include "textgfx.h"
+#include "terminal.h"
 
 int centre_text(const char *s, int w, int x, int y)
 {
@@ -14,8 +15,8 @@ int centre_text(const char *s, int w, int x, int y)
 		x += (w - len)/2;
 
 	moveto(x, y);
-	textgfx.puttext(buf);
-	textgfx.x += len;
+	terminal.puttext(buf);
+	terminal.cursor_x += len;
 
 	return len - 2;
 }

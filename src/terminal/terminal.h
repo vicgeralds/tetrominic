@@ -3,14 +3,14 @@
 #ifndef terminal_h
 #define terminal_h
 
-#include <stdio.h>
-
 struct terminal {
 	unsigned short width;
 	unsigned short height;
-	FILE *out;
-	void (*hide_cursor)();
-	void (*show_cursor)();
+	int lines;
+	void (*putacs)(const char *);
+	void (*puttext)(const char *);
+	int cursor_x, cursor_y;
+	int x0, y0;
 };
 
 extern struct terminal terminal;
@@ -25,12 +25,34 @@ void gettermsize();
 void set_input_mode();
 void restore_input_mode();
 
-/* simple output wrappers */
-void tputstr(const char *s);
-int  tprintf(const char *format, ...);
+/* move the cursor to column x, row y */
+void moveto(int x, int y);
 
-/* use the alt char set (line drawing) */
-void tputacs(const char *s);
+void cleartoeol();
+void clearscreen();
+
+/* Select Graphic Rendition */
+
+#define BOLD        0x100
+#define UNDERLINE   0x200
+#define BLINK       0x400
+#define STANDOUT    0x800
+#define FG_COLOR(x) ((x) | 8)
+#define BG_COLOR(x) (((x) | 8) << 4)
+
+#define ALTCHARSET	0x1000
+#define VT100_GRAPHICS  0x2000
+
+/* set SGR parameters and switch back from alternate character set.
+ *
+ * The flags ALTCHARSET and VT100_GRAPHICS prevents switching back to normal.
+ */
+void set_text_attr(int attr);
+
+void hide_cursor();
+void show_cursor();
+
+void putacs_vt100(const char *s);
 
 /* put cp437 string using the current locale */
 void tputtext(const char *s);
