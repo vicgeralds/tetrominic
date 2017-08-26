@@ -2,9 +2,6 @@
 
 #define textgfx terminal
 
-void textgfx_init();
-void textgfx_end();
-
 /* must be called to get actual output */
 void update_screen();
 

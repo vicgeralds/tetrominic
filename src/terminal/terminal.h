@@ -15,15 +15,10 @@ struct terminal {
 
 extern struct terminal terminal;
 
-/* init terminal structure */
-void init_terminal();
+int init_terminal();
 
 /* update terminal.width and terminal.height */
-void gettermsize();
-
-/* terminal non-canonical mode */
-void set_input_mode();
-void restore_input_mode();
+void get_terminal_size();
 
 /* move the cursor to column x, row y */
 void moveto(int x, int y);
