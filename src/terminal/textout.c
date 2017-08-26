@@ -58,7 +58,7 @@ static int convert_text(const char *s, char *buf, size_t n)
 	return i;
 }
 
-void tputtext(const char *s)
+void puttext_unicode(const char *s)
 {
 	char buf[20];
 

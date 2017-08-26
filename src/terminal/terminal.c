@@ -5,7 +5,7 @@ struct terminal terminal = {
        	25, 	/* height */
 	1,	/* lines */
 	putacs_vt100,
-	tputtext
+	puttext_unicode
 };
 
 void init_terminal()

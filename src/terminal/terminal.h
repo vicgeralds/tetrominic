@@ -55,6 +55,6 @@ void show_cursor();
 void putacs_vt100(const char *s);
 
 /* put cp437 string using the current locale */
-void tputtext(const char *s);
+void puttext_unicode(const char *s);
 
 #endif
