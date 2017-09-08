@@ -4,52 +4,24 @@
 
 /* Alternate character set mapping to IBM graphics */
 
-static const char acs_vt100[] = "`a+,-.fgh0jklmnopqrstuvwxyz{|}~";
-
-static const char acs_cp437[] = {
-	TEXT_DIAMOND,
-	TEXT_MEDIUM_SHADE,
-	TEXT_RIGHT_ARROW,
-	TEXT_LEFT_ARROW,
-	TEXT_UP_ARROW,
-	TEXT_DOWN_ARROW,
-	TEXT_DEGREE_SYMBOL,
-	TEXT_PLUS_MINUS,
-	TEXT_LIGHT_SHADE,
-	TEXT_SOLID_BLOCK,
-	TEXT_LOWER_RIGHT_CORNER,
-	TEXT_UPPER_RIGHT_CORNER,
-	TEXT_UPPER_LEFT_CORNER,
-	TEXT_LOWER_LEFT_CORNER,
-	TEXT_CROSS,
-	TEXT_SCAN_LINE_1,
-	TEXT_SCAN_LINE_3,
-	TEXT_HORIZONTAL_LINE,
-	TEXT_SCAN_LINE_7,
-	TEXT_SCAN_LINE_9,
-	TEXT_LEFT_T,
-	TEXT_RIGHT_T,
-	TEXT_BOTTOM_T,
-	TEXT_TOP_T,
-	TEXT_VERTICAL_LINE,
-	TEXT_LESS_THAN_OR_EQUAL,
-	TEXT_GREATER_THAN_OR_EQUAL,
-	TEXT_PI,
-	TEXT_NOT_EQUAL,
-	TEXT_POUND_STERLING,
-	TEXT_MID_DOT,
-	'\0'
-};
-
 static int acs_to_text(int c)
 {
-	const char *p = acs_vt100 + (c & 31);
-
-	if (c != *p) {
-		p = strchr(acs_vt100, c);
+	switch (c) {
+	case 'a': return TEXT_MEDIUM_SHADE;
+	case 'h': return TEXT_LIGHT_SHADE;
+	case 'j': return TEXT_LOWER_RIGHT_CORNER;
+	case 'k': return TEXT_UPPER_RIGHT_CORNER;
+	case 'l': return TEXT_UPPER_LEFT_CORNER;
+	case 'm': return TEXT_LOWER_LEFT_CORNER;
+	case 'n': return TEXT_CROSS;
+	case 'q': return TEXT_HORIZONTAL_LINE;
+	case 't': return TEXT_LEFT_T;
+	case 'u': return TEXT_RIGHT_T;
+	case 'v': return TEXT_BOTTOM_T;
+	case 'w': return TEXT_TOP_T;
+	case 'x': return TEXT_VERTICAL_LINE;
 	}
-
-	return p ? acs_cp437[p - acs_vt100] : c;
+	return c;
 }
 
 static int convert_chars(const char *s, char *buf, size_t n)
@@ -71,6 +43,6 @@ void putacs_text(const char *s)
 
 	while (*s) {
 		s += convert_chars(s, buf, sizeof(buf));
-		textgfx.puttext(buf);
+		terminal.puttext(buf);
 	}
 }

@@ -22,7 +22,7 @@ static wchar_t cp437_unicode[128] = L""
 	"\u00b0\u2219\u00b7\u221a\u207f\u00b2\u25a0\u00a0";
 
 /* convert character from code page 437 to a wide character */
-static wint_t towc(int c)
+static wint_t to_wide(int c)
 {
 	if ((unsigned char) c < 128)
 		return btowc(c);
@@ -39,7 +39,7 @@ static int convert_text(const char *s, char *buf, size_t n)
 	size_t mblen = MB_CUR_MAX;
 
 	while (n > mblen && s[i]) {
-		wint_t c = towc(s[i]);
+		wint_t c = to_wide(s[i]);
 
 		n -= mblen;
 
