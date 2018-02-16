@@ -9,7 +9,7 @@ struct terminal terminal = {
        	25, 	/* height */
 	1,	/* lines */
 	putacs_vt100,
-	puttext_unicode
+	puttext_ibm
 };
 
 static struct termios saved_term_attr;

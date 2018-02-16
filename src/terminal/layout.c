@@ -1,5 +1,4 @@
 #include <string.h>
-#include "textgfx.h"
 #include "terminal.h"
 
 int centre_text(const char *s, int w, int x, int y)

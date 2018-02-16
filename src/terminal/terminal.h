@@ -49,7 +49,15 @@ void show_cursor();
 
 void putacs_vt100(const char *s);
 
+void puttext_ibm(const char *s);
+
 /* put cp437 string using the current locale */
 void puttext_unicode(const char *s);
+
+/* pad with single spaces and centre on line of length w.
+ *
+ * return the number of characters taken from s
+ */
+int centre_text(const char *s, int w, int x, int y);
 
 #endif

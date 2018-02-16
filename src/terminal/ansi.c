@@ -21,7 +21,7 @@ static void nlto(int y)
 	}
 }
 
-/* heuristic to determine visible lines in use */
+/* Update visible lines in use before moving the cursor to line y */
 static void grow_lines(int y)
 {
 	int y0  = terminal.y0;
@@ -30,6 +30,7 @@ static void grow_lines(int y)
 		
 	if (top >= terminal.lines) {
 		terminal.lines = top+1;
+		/* Print newlines if needed */
 		nlto(y);
 	}
 	if (top + h < terminal.lines) {
@@ -97,7 +98,7 @@ void set_text_attr(int attr)
 
 	p = sgr + strlen(sgr) - 1;
 
-		/* any attributes off */
+	/* any attributes off? */
 	if (toggle & ansi_attr & 0xF88) {
 		*++p = '0';
 		*++p = ';';
@@ -110,13 +111,13 @@ void set_text_attr(int attr)
 	if (toggle & BLINK)	{ *++p = '5'; *++p = ';'; }
 	if (toggle & STANDOUT)	{ *++p = '7'; *++p = ';'; }
 
-		/* foreground color */
+	/* foreground color */
 	if ((toggle & 0x0F) + (attr & 8) > 8) {
 		*++p = '3';
 		*++p = '0' + (attr & 7);
 		*++p = ';';
 	}
-		/* background color */
+	/* background color */
 	if ((toggle & 0xF0) + (attr & 0x80) > 0x80) {
 		*++p = '4';
 		*++p = '0' + ((attr >> 4) & 7);
@@ -141,18 +142,24 @@ void show_cursor()
 
 void putacs_vt100(const char *s)
 {
+	if ((ansi_attr | ALTCHARSET | VT100_GRAPHICS) != ansi_attr) {
+		/* Select VT100 graphics mapping */
+		puttext_ibm(ESC "(0");
+		ansi_attr |= ALTCHARSET | VT100_GRAPHICS;
+	}
+
+	fputs(s, stdout);
+}
+
+void puttext_ibm(const char *s)
+{
 	if (!(ansi_attr & ALTCHARSET)) {
 		/* Select the IBM PC alternate character set.
 		 * This works in the linux console and makes it possible to
 		 * switch to VT100 graphics even in utf8 mode.
 		 */
 		fputs(CSI "11m", stdout);
-	}
-
-	if ((ansi_attr | ALTCHARSET | VT100_GRAPHICS) != ansi_attr) {
-		ansi_attr |= ALTCHARSET | VT100_GRAPHICS;
-		/* Select VT100 graphics mapping */
-		fputs(ESC "(0", stdout);
+		ansi_attr |= ALTCHARSET;
 	}
 
 	fputs(s, stdout);

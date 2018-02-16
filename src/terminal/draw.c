@@ -21,12 +21,13 @@ void flush_tg(struct tg_buffer *line)
 		line->buf[len] = '\0';
 
 		moveto(line->x, line->y);
-		set_text_attr(attr);
-		if (attr & ALTCHARSET)
+		if (attr & ALTCHARSET) {
+			set_text_attr(attr | VT100_GRAPHICS);
 			terminal.putacs(line->buf);
-		else
+		} else {
+			set_text_attr(attr | ALTCHARSET);
 			terminal.puttext(line->buf);
-
+		}
 		line->x = (terminal.cursor_x += len);
 	}
 	line->len = 0;
