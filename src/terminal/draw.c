@@ -91,6 +91,7 @@ void drawtiles(unsigned char *front, const unsigned char *back,
 	struct tg_buffer line;
 	line.y = y;
 	line.len = 0;
+	line.attr = 0;
 
 	for (; h > 0; h--) {
 		const unsigned char *nextRow = back + w;
