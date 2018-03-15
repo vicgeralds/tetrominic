@@ -14,10 +14,10 @@ void drawchar(int c, int attr, struct tg_buffer *);
 void flush_tg(struct tg_buffer *);
 
 /* add line drawing characters from s.
-   wrap after w characters (don't wrap if w is zero).
+   wrap after w characters from x0.
    repeat char if followed by a positive number (decimal digits)
 */
-void drawacs(const char *s, int w, struct tg_buffer *);
+void drawacs(const char *s, int w, struct tg_buffer *, int x0);
 
 /* a tileset using one character per nibble */
 struct tg_tiles {

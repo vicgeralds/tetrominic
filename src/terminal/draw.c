@@ -45,11 +45,9 @@ static const char *match_paren(const char *s)
 	return s;
 }
 
-void drawacs(const char *s, int w, struct tg_buffer *line)
+void drawacs(const char *s, int w, struct tg_buffer *line, int x0)
 {
-	int wrapcount = w;
-
-	while (*s && *s != ')') {
+	while (*s && *s != ')' && w > 0) {
 		int c = *s++;
 		int repeat = 0;
 
@@ -63,22 +61,18 @@ void drawacs(const char *s, int w, struct tg_buffer *line)
 
 		if (c == '(') {
 			for (; repeat >= 0; repeat--)
-				drawacs(s, w, line);
+				drawacs(s, w, line, x0);
 
 			s = match_paren(s);
-			wrapcount = w;		/* wrapping state is lost */
 		}
 
 		for (; repeat >= 0; repeat--) {
-			drawchar(c, ALTCHARSET | line->attr, line);
-			wrapcount--;
-			/* wrapcount < 0 if w is zero */
-			if (wrapcount == 0) {
+			if (line->x + line->len >= x0 + w) {
 				flush_tg(line);
 				line->y++;
-				line->x -= w;
-				wrapcount = w;
+				line->x = x0;
 			}
+			drawchar(c, ALTCHARSET | line->attr, line);
 		}
 	}
 }
