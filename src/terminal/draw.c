@@ -88,10 +88,10 @@ void draw_acs(const char *s, int w, int x, int y, int attr)
 	flush_tg(&line);
 }
 
-static void draw_tile(int x, Tiles tiles, struct tg_buffer *line)
+static void draw_tile(int nibbles, Tiles tiles, struct tg_buffer *line)
 {
-	int n1 = (x & 0xF0) >> 4,
-	    n2 = (x & 0x0F);
+	int n1 = (nibbles & 0xF0) >> 4,
+	    n2 = (nibbles & 0x0F);
 	drawchar(tiles->chars[n1], tiles->attrs[n1], line);
 	drawchar(tiles->chars[n2], tiles->attrs[n2], line);
 }
