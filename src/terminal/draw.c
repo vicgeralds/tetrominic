@@ -77,6 +77,17 @@ void drawacs(const char *s, int w, struct tg_buffer *line, int x0)
 	}
 }
 
+void draw_acs(const char *s, int w, int x, int y, int attr)
+{
+	struct tg_buffer line;
+	line.x = x;
+	line.y = y;
+	line.len = 0;
+	line.attr = attr;
+	drawacs(s, w, &line, x);
+	flush_tg(&line);
+}
+
 static void draw_tile(int x, Tiles tiles, struct tg_buffer *line)
 {
 	int n1 = (x & 0xF0) >> 4,

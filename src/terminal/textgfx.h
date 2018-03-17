@@ -19,6 +19,8 @@ void flush_tg(struct tg_buffer *);
 */
 void drawacs(const char *s, int w, struct tg_buffer *, int x0);
 
+void draw_acs(const char *s, int w, int x, int y, int attr);
+
 /* a tileset using one character per nibble */
 struct tg_tiles {
 	char chars[16];
