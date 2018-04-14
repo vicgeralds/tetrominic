@@ -1,12 +1,19 @@
 /* Tetromino playing field */
 
-/* auto repeat rate, 60 Hz/frames */
+/* Time constants are in frames assuming that the game will be run at this
+ * speed
+ */
+#define TETFIELD_FPS 60
+
+/* auto repeat rate. This limits how fast an action can be repeated */
 #define AUTOREPEAT_FRAMES 3
 
 /* how many times a blocked move is retried */
 #define WALL_CHARGE_FRAMES 4
 
-/* NOTE: extra row needed for collision test after floor kick */
+/* number of rows that can be occupied. NOTE: extra row needed for collision
+ * test after floor kick
+ */
 #define PLAYFIELD_HEIGHT 24
 #define SPAWN_ROW (PLAYFIELD_HEIGHT - 5)
 
@@ -19,7 +26,9 @@
 /* inverted bit used to mark blocks being cleared */
 #define LINE_CLEAR_MARK 1
 
-/* grid of occupied cells */
+/* grid representing the set of occupied cells. It also has state for line
+ * clear animation
+ */
 struct tetgrid {
 	int cols;
 	int clearing;	/* number of lines being cleared */
