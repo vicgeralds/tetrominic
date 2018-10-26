@@ -17,8 +17,8 @@ extern struct terminal terminal;
 
 int init_terminal();
 
-/* update terminal.width and terminal.height */
-void get_terminal_size();
+void setup_terminal();
+void restore_terminal();
 
 /* move the cursor to column x, row y */
 void moveto(int x, int y);
