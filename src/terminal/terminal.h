@@ -15,6 +15,7 @@ struct terminal {
 
 extern struct terminal terminal;
 
+/* returns 0 if not a terminal */
 int init_terminal();
 
 void setup_terminal();

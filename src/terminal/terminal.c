@@ -44,13 +44,13 @@ static void get_terminal_size()
 {
 #if defined(TIOCGSIZE)
 	struct ttysize tty;
-	if (!ioctl(STDIN_FILENO, TIOCGSIZE, &tty)) {
+	if (!ioctl(STDOUT_FILENO, TIOCGSIZE, &tty)) {
 		terminal.width  = tty.ts_cols;
 		terminal.height = tty.ts_lines;
 	}
 #elif defined(TIOCGWINSZ)
 	struct winsize win;
-	if (!ioctl(STDIN_FILENO, TIOCGWINSZ, &win)) {
+	if (!ioctl(STDOUT_FILENO, TIOCGWINSZ, &win)) {
 		terminal.width  = win.ws_col;
 		terminal.height = win.ws_row;
 	}
@@ -59,6 +59,9 @@ static void get_terminal_size()
 
 int init_terminal()
 {
+	if (!isatty(STDOUT_FILENO)) {
+		return 0;
+	}
 	tcgetattr(STDIN_FILENO, &saved_term_attr);
 	setup_terminal();
 	return 1;
