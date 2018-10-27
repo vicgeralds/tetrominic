@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <termios.h>
+#include <errno.h>
 #include "terminal.h"
 
 struct terminal terminal = {
@@ -85,4 +86,14 @@ void restore_terminal()
 		show_cursor();
 	}
 	fflush(stdout);
+}
+
+void print_error(const char *s)
+{
+	int saved_errno = errno;
+	set_text_attr(0);
+	clearscreen();
+	fflush(stdout);
+	errno = saved_errno;
+	perror(s);
 }

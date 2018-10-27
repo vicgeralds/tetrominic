@@ -20,6 +20,7 @@ int init_terminal();
 
 void setup_terminal();
 void restore_terminal();
+void print_error(const char *s);
 
 /* move the cursor to column x, row y */
 void moveto(int x, int y);
