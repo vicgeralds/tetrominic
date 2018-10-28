@@ -1,5 +1,5 @@
 CCFLAGS = $(CFLAGS) $(CPPFLAGS)
-OBJS = terminal.o ansi.o textout.o acstext.o draw.o layout.o
+OBJS = terminal.o ansi.o input.o textout.o acstext.o draw.o layout.o
 
 terminal.a: $(OBJS)
 	$(AR) rs terminal.a $(OBJS)
@@ -8,6 +8,8 @@ terminal.o: terminal.c terminal.h
 	$(CC) $(CCFLAGS) -c terminal.c
 ansi.o: ansi.c terminal.h
 	$(CC) $(CCFLAGS) -c ansi.c
+input.o: input.c input.h terminal.h
+	$(CC) $(CCFLAGS) -c input.c
 textout.o: textout.c terminal.h
 	$(CC) $(CCFLAGS) -c textout.c
 acstext.o: acstext.c acstext.h terminal.h

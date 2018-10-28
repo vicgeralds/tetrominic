@@ -4,8 +4,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <errno.h>
-#include "terminal.h"
 #include "input.h"
+#include "terminal.h"
 
 /* Get the length of an escape sequence/control sequence */
 static size_t get_seq_len(const char *s, size_t buflen)
