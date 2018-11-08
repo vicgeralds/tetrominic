@@ -210,7 +210,7 @@ static blocks_row invert_blocks(const struct tetgrid *grid, int row)
 	return b ^ (grid->blocks[row] | LINE_CLEAR_MARK);
 }
 
-static void grow_cleared_blocks(struct tetgrid *grid, int row)
+static blocks_row grow_cleared_blocks(struct tetgrid *grid, int row)
 {
 	blocks_row b = invert_blocks(grid, row);
 	if (b)
@@ -219,22 +219,27 @@ static void grow_cleared_blocks(struct tetgrid *grid, int row)
 		/* odd or even width */
 		b = (grid->cols & 1) ? 1 : 3;
 		/* start clearing from middle */
-		grid->blocks[row] ^= b << (grid->cols/2 +
-		                           LEFT_WALL_WIDTH - 1);
+		grid->blocks[row] ^= b << (grid->cols/2 + LEFT_WALL_WIDTH - 1);
 	}
+
+	return (b ^ invert_blocks(grid, row)) >> LEFT_WALL_WIDTH;
 }
 
-static int clear_blocks(struct tetgrid *grid)
+int update_line_clears(struct tetgrid *grid)
 {
 	int cleared = 0;
 	int clearing = grid->clearing;
 	int i;
+
+	if (grid->delay > 0) {
+		grid->delay--;
+		return 0;
+	}
 	for (i=1; clearing > 0 && i < PLAYFIELD_HEIGHT; i++) {
 		if (!(grid->blocks[i] & LINE_CLEAR_MARK)) {
 			cleared = i;
 			clearing--;
 			if (!is_empty_row(grid, i)) {
-				grow_cleared_blocks(grid, i);
 				grid->delay = BLOCK_CLEAR_DELAY;
 			}
 		}
@@ -242,20 +247,17 @@ static int clear_blocks(struct tetgrid *grid)
 	return cleared;
 }
 
-int update_blocks(struct tetgrid *grid)
+blocks_row shift_cleared_blocks(struct tetgrid *grid, int row)
 {
-	if (grid->delay > 0) {
-		grid->delay--;
+	if (is_empty_row(grid, row)) {
+		/* remove cleared row */
+		for (; row + 1 < PLAYFIELD_HEIGHT; row++) {
+			grid->blocks[row] = grid->blocks[row + 1];
+		}
+		grid->clearing--;
 		return 0;
 	}
-	return clear_blocks(grid);
-}
-
-blocks_row get_cleared_blocks(const struct tetgrid *grid, int row)
-{
-	return is_empty_row(grid, row) ?
-		0 :
-		invert_blocks(grid, row) >> LEFT_WALL_WIDTH;
+	return grow_cleared_blocks(grid, row);
 }
 
 int next_cleared_row(const struct tetgrid *grid, int row)
@@ -264,12 +266,4 @@ int next_cleared_row(const struct tetgrid *grid, int row)
 	while (grid->blocks[row] & LINE_CLEAR_MARK);
 	/* row 0 always has the LINE_CLEAR_MARK bit reversed */
 	return row;
-}
-
-void remove_cleared_row(struct tetgrid *grid, int row)
-{
-	for (; row + 1 < PLAYFIELD_HEIGHT; row++)
-		grid->blocks[row] = grid->blocks[row + 1];
-
-	grid->clearing--;
 }

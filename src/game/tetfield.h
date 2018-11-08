@@ -75,18 +75,20 @@ int run_tetfield(struct tetfield *, struct tetgrid *, enum action, struct change
    return number of lines cleared */
 int lock_tetfield(struct tetfield *, struct tetgrid *);
 
-/* clear blocks and process line clear gravity.
-   return row number of cleared blocks */
-int update_blocks(struct tetgrid *);
+/* tick line clear timer.
+   return row number > 0 when there are cleared blocks to process */
+int update_line_clears(struct tetgrid *);
 
-/* return blocks that have been cleared as set bits,
-   with the leftmost visible column in bit 0.
-   return 0 when the row is empty */
-blocks_row get_cleared_blocks(const struct tetgrid *, int row);
+/* remove cleared blocks from row (two at a time).
+ *
+ * if the row is empty: remove it from the grid by moving all rows above it
+ * down by 1.
+ *
+ * return blocks that have been cleared as set bits, with the leftmost visible
+ * column in bit 0
+ */
+blocks_row shift_cleared_blocks(struct tetgrid *, int row);
 
 /* get next row of cleared blocks.
    return row number > 0 until done */
 int next_cleared_row(const struct tetgrid *, int row);
-
-/* remove one row from the grid, moving rows above it down by 1 */
-void remove_cleared_row(struct tetgrid *, int row);
