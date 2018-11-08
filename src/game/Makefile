@@ -10,7 +10,7 @@ tetmino.o: tetmino.c tetmino.h
 	$(CC) $(CCFLAGS) -c tetmino.c
 random.o: random.c random.h
 	$(CC) $(CCFLAGS) -c random.c
-view.o: view.c tetmino.h view.h
+view.o: view.c tetmino.h view.h ../terminal/textgfx.h
 	$(CC) $(CCFLAGS) -c view.c
 
 clean:
