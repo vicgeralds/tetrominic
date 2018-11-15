@@ -71,25 +71,6 @@ int drop_height(const struct tetmino *t, const blocks_row *blocks, int max)
 	return h;
 }
 
-int has_blocks_above(const struct tetmino *t, const blocks_row *blocks, int row0)
-{
-	unsigned shape = t->shape;
-	unsigned row_mask = (1 << PIECE_WIDTH) - 1;
-	int ret = 0;
-	int row = t->row + PIECE_HEIGHT;
-
-	for (; shape && row > row0; row--) {
-		unsigned shape1 = shape & row_mask;
-		shape >>= PIECE_WIDTH;
-		/* check to avoid out of bounds on highest row in blocks */
-		if (shape1) {
-			if (shape1 & (blocks[row] >> t->col))
-				ret = row;
-		}
-	}
-	return ret;
-}
-
 /* doesn't handle the I piece! */
 static int floor_kick(struct tetmino *t, unsigned rotated, unsigned box)
 {

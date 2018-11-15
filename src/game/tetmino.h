@@ -66,11 +66,6 @@ int can_move_tetmino(const struct tetmino *, const blocks_row *, int d);
    return when height max is reached */
 int drop_height(const struct tetmino *, const blocks_row *, int max);
 
-/* check collision moving blocks down 1 row from above,
-   testing blocks in rows above row0.
-   return row number of collision or 0 */
-int has_blocks_above(const struct tetmino *, const blocks_row *, int row0);
-
 enum action {
 	NO_ACTION,
 	ROTATE_CW,
