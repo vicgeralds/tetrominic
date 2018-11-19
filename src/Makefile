@@ -1,8 +1,8 @@
 tetrominic: main.o game terminal
-	$(CC) -o tetrominic main.o game/game.a terminal/terminal.a
+	$(CC) $(LDFLAGS) main.o game/game.a terminal/terminal.a -o tetrominic
 
 main.o: main.c terminal/terminal.h terminal/acstext.h terminal/input.h game/game.h
-	$(CC) $(CCFLAGS) -c main.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c main.c
 
 terminal:
 	$(MAKE) -C terminal
@@ -10,4 +10,9 @@ terminal:
 game:
 	$(MAKE) -C game
 
-.PHONY: terminal game
+clean:
+	rm -f *.o
+	$(MAKE) -C terminal clean
+	$(MAKE) -C game clean
+
+.PHONY: terminal game clean
