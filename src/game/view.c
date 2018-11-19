@@ -45,6 +45,22 @@ static void make_piece(unsigned char *piece, unsigned bits)
 	}
 }
 
+/* toggle 0x80 bits from bitmap before rendering piece */
+static void unrender_piece(struct piece *p)
+{
+	const unsigned char *bmp = p->bitmap.bitmap;
+	struct copyrect r = p->r;
+
+	for (; r.height > 0; r.height--) {
+		int i;
+		for (i=0; i < r.width; i++) {
+			p->piece[r.si + i] &= bmp[r.di + i] | 0x7f;
+		}
+		r.di += p->bitmap.width;
+		r.si += PIECE_WIDTH;
+	}
+}
+
 static void render_piece(const struct piece *p, int mask)
 {
 	unsigned char *bmp = p->bitmap.bitmap;
@@ -73,6 +89,8 @@ void render_tetmino_piece(struct piece *p, const struct tetmino *t, int mask)
 
 	make_piece(p->piece, t->shape);
 
+	unrender_piece(p);
+
 	mask &= 0x88 | (0x11 * (t->piece + 1));
 
 	render_piece(p, mask);
@@ -92,7 +110,7 @@ static void render_blocks(struct blocks *b)
 	}
 	drawtiles(front, back, w, h, b->x, b->y, &b->tiles);
 
-	render_piece(&b->piece, 0);
+	render_piece(&b->piece, 0x80);
 }
 
 void render_tetmino_blocks(struct blocks *b, const struct tetmino *t, int mask)
@@ -107,15 +125,23 @@ void render_cleared_blocks(struct bitmap *bitmap, int row, blocks_row mask)
 	unsigned char *bmp = bitmap->bitmap;
 	int w = bitmap->width;
 	int h = bitmap->height;
+	int i = 0;
 
 	if (mask) {
-		int i = 0;
 		for (; mask; mask >>= 1, i++) {
 			if (mask & 1)
-				bmp[w * (h - row) + i] = 0;
+				bmp[w * (h - row) + i] = 0x80;
 		}
 	} else {
 		memmove(bmp + w, bmp, w * (h - row));
-		memset(bmp , 0, w);
+		memset(bmp, 0, w);
+		while (memchr(bmp + w, 0, w)) {
+			bmp += w;
+		}
+		for (; i < w; i++) {
+			if (!bmp[i]) {
+				bmp[i] = 0x80;
+			}
+		}
 	}
 }
