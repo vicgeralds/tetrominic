@@ -13,6 +13,35 @@
 
 #include "game/game.h"
 
+static volatile sig_atomic_t signal_caught;
+
+static void catch_signal(int sig)
+{
+	signal_caught = sig;
+}
+
+static int process_signal()
+{
+	int sig = signal_caught;
+
+	signal_caught = 0;
+
+	if (sig == SIGINT || sig == SIGTERM || sig == SIGTSTP) {
+		restore_terminal();
+
+		/* call default signal handler */
+		signal(sig, SIG_DFL);
+		raise(sig);
+	} else if (sig) {
+		/* resumed or resized */
+		if (sig == SIGCONT) {
+			signal(SIGTSTP, catch_signal);
+		}
+		setup_terminal();
+	}
+	return sig;
+}
+
 static int is_linux_console()
 {
 	char *s = getenv("TERM");
@@ -58,12 +87,25 @@ static void run_game_loop()
 
 	while (update_game(&game, input.current.s)) {
 		wait_one_frame();
+		process_signal();
 		read_terminal_seq(&input);
+		process_signal();
+		if (terminal.lines == 1) {
+			game.blocks.rendered = 0;
+		}
 	}
 }
 
 int main(int argc, char **argv)
 {
+	signal(SIGINT, catch_signal);
+	signal(SIGTERM, catch_signal);
+	signal(SIGCONT, catch_signal);
+	signal(SIGTSTP, catch_signal);
+#ifdef SIGWINCH
+	signal(SIGWINCH, catch_signal);
+#endif
+
 	setlocale(LC_CTYPE, "");
 
 	if (!init_terminal()) {
