@@ -6,12 +6,13 @@
 
 static void init_game_blocks(struct game *game)
 {
-	int w = GAME_TETGRID_COLS;
-	int h1 = GAME_BLOCKS_CEILING;
-	int h2 = GAME_BLOCKS_HEIGHT;
-	struct blocks blocks = BLOCKS_INIT(game->bitmap, w, h2);
-	int top_size = w * (h2 - h1);
+	const int w = GAME_TETGRID_COLS;
+	const int h1 = GAME_BLOCKS_CEILING;
+	const int h2 = GAME_BLOCKS_HEIGHT;
+	struct blocks blocks = BLOCKS_INIT(NULL, w, h2);
+	const int top_size = w * (h2 - h1);
 
+	blocks.piece.bitmap.bitmap = game->bitmap;
 	blocks.x = terminal.width / 2 - w;
 
 	game->blocks = blocks;
@@ -22,7 +23,9 @@ static void init_game_blocks(struct game *game)
 
 void init_game(struct game *game, int gravity)
 {
-	struct tetfield tetfield = { { 0 }, game->tetgrid.blocks, gravity };
+	struct tetfield tetfield = { { 0 } };
+	tetfield.blocks = game->tetgrid.blocks;
+	tetfield.gravity = gravity;
 
 	init_tetgrid(&game->tetgrid, GAME_TETGRID_COLS);
 	game->tetfield = tetfield;
