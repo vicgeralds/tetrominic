@@ -45,23 +45,7 @@ static void make_piece(unsigned char *piece, unsigned bits)
 	}
 }
 
-/* toggle 0x80 bits from bitmap before rendering piece */
-static void unrender_piece(struct piece *p)
-{
-	const unsigned char *bmp = p->bitmap.bitmap;
-	struct copyrect r = p->r;
-
-	for (; r.height > 0; r.height--) {
-		int i;
-		for (i=0; i < r.width; i++) {
-			p->piece[r.si + i] &= bmp[r.di + i] | 0x7f;
-		}
-		r.di += p->bitmap.width;
-		r.si += PIECE_WIDTH;
-	}
-}
-
-static void render_piece(const struct piece *p, int mask)
+static void render_piece(struct piece *p, int mask)
 {
 	unsigned char *bmp = p->bitmap.bitmap;
 	struct copyrect r = p->r;
@@ -69,8 +53,11 @@ static void render_piece(const struct piece *p, int mask)
 	for (; r.height > 0; r.height--) {
 		int i;
 		for (i=0; i < r.width; i++) {
-			if (p->piece[r.si + i])
-				bmp[r.di + i] = p->piece[r.si + i] & mask;
+			int block = p->piece[r.si + i];
+			/* save background */
+			p->piece[r.si + i] = bmp[r.di + i];
+			if (block)
+				bmp[r.di + i] = block & mask;
 		}
 		r.di += p->bitmap.width;
 		r.si += PIECE_WIDTH;
@@ -89,11 +76,21 @@ void render_tetmino_piece(struct piece *p, const struct tetmino *t, int mask)
 
 	make_piece(p->piece, t->shape);
 
-	unrender_piece(p);
-
 	mask &= 0x88 | (0x11 * (t->piece + 1));
 
 	render_piece(p, mask);
+}
+
+static void remove_piece(struct piece *p)
+{
+	unsigned char *bmp = p->bitmap.bitmap;
+	struct copyrect r = p->r;
+
+	for (; r.height > 0; r.height--) {
+		memcpy(bmp + r.di, p->piece + r.si, r.width);
+		r.di += p->bitmap.width;
+		r.si += PIECE_WIDTH;
+	}
 }
 
 static void render_blocks(struct blocks *b)
@@ -110,7 +107,7 @@ static void render_blocks(struct blocks *b)
 	}
 	drawtiles(front, back, w, h, b->x, b->y, &b->tiles);
 
-	render_piece(&b->piece, 0x80);
+	remove_piece(&b->piece);
 }
 
 void render_tetmino_blocks(struct blocks *b, const struct tetmino *t, int mask)
