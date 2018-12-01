@@ -53,6 +53,8 @@ struct tetmino {
 	int climbed;		/* floor kick state */
 };
 
+struct tetmino *init_tetmino(struct tetmino *, int piece, int row, int col, int delay);
+
 /* extract one row from shape, counting from bottom */
 int tetmino_has_row(unsigned shape, int i);
 

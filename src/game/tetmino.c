@@ -10,6 +10,19 @@ unsigned short tetmino_shapes[7][4] = {
 	{TETMINO_J, TETMINO_J2, TETMINO_J3, TETMINO_J4}
 };
 
+struct tetmino *init_tetmino(struct tetmino *t, int piece, int row, int col, int delay)
+{
+	t->shape = tetmino_shapes[piece][0];
+	t->piece = piece;
+	t->row = row;
+	t->col = col;
+	t->falling = delay;
+	t->lock_delay_move = 0;
+	t->lock_delay_step = 0;
+	t->climbed = 0;
+	return t;
+}
+
 int tetmino_has_row(unsigned shape, int i)
 {
 	int shift = (PIECE_HEIGHT - 1 - i) * PIECE_WIDTH;

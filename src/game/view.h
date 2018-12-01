@@ -14,25 +14,31 @@ struct copyrect {
 };
 
 struct piece {
-	struct bitmap bitmap;
 	struct copyrect r;
 	unsigned char piece[PIECE_WIDTH * PIECE_HEIGHT];
+	struct piece *prev;
+};
+
+struct tetmino_piece {
+	union {
+		struct piece piece;
+		struct tetmino tetmino;
+	} data;
+	const struct tetmino *tetmino;
+	int mask;
+	struct tetmino_piece *succ;
 };
 
 struct blocks {
-	struct piece piece;
+	struct bitmap bitmap;
 	struct tg_tiles tiles;
 	int x, y;
 	int rendered;
 };
 
 #define BLOCKS_INIT(bitmap, width, height) { \
-	BLOCKS_PIECE_INIT(bitmap, width, height), \
+	{ bitmap, width, height }, \
 	BLOCKS_TILES_INIT \
-}
-
-#define BLOCKS_PIECE_INIT(bitmap, width, height) { \
-	{ bitmap, width, height } \
 }
 
 #define BLOCKS_TILES_INIT { \
@@ -49,6 +55,12 @@ struct blocks {
 
 #define BLOCKS_TILES_ATTR(x) BG_COLOR(x) | FG_COLOR(x) | BOLD | ALTCHARSET
 
-void render_tetmino_piece(struct piece *, const struct tetmino *t, int mask);
-void render_tetmino_blocks(struct blocks *, const struct tetmino *t, int mask);
+void render_tetmino_piece(struct bitmap *, struct piece *,
+	const struct tetmino *t, int mask);
+
+struct tetmino_piece *init_tetmino_piece(struct tetmino_piece *,
+	const struct tetmino *t, int mask, struct tetmino_piece *succ);
+
+void render_tetmino_blocks(struct blocks *, struct tetmino_piece *tp);
+
 void render_cleared_blocks(struct bitmap *, int row, blocks_row mask);

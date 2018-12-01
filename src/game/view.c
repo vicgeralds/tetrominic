@@ -45,9 +45,9 @@ static void make_piece(unsigned char *piece, unsigned bits)
 	}
 }
 
-static void render_piece(struct piece *p, int mask)
+static void render_piece(struct bitmap *bitmap, struct piece *p, int mask)
 {
-	unsigned char *bmp = p->bitmap.bitmap;
+	unsigned char *bmp = bitmap->bitmap;
 	struct copyrect r = p->r;
 
 	for (; r.height > 0; r.height--) {
@@ -59,15 +59,15 @@ static void render_piece(struct piece *p, int mask)
 			if (block)
 				bmp[r.di + i] = block & mask;
 		}
-		r.di += p->bitmap.width;
+		r.di += bitmap->width;
 		r.si += PIECE_WIDTH;
 	}
 }
 
-void render_tetmino_piece(struct piece *p, const struct tetmino *t, int mask)
+void render_tetmino_piece(struct bitmap *bitmap, struct piece *p, const struct tetmino *t, int mask)
 {
-	int w = p->bitmap.width;
-	int h = p->bitmap.height;
+	int w = bitmap->width;
+	int h = bitmap->height;
 
 	p->r = cliprect(
 		w, h, PIECE_WIDTH, PIECE_HEIGHT,
@@ -78,27 +78,55 @@ void render_tetmino_piece(struct piece *p, const struct tetmino *t, int mask)
 
 	mask &= 0x88 | (0x11 * (t->piece + 1));
 
-	render_piece(p, mask);
+	render_piece(bitmap, p, mask);
 }
 
-static void remove_piece(struct piece *p)
+struct tetmino_piece *init_tetmino_piece(struct tetmino_piece *tp,
+	const struct tetmino *t, int mask, struct tetmino_piece *succ)
 {
-	unsigned char *bmp = p->bitmap.bitmap;
-	struct copyrect r = p->r;
+	tp->tetmino = t;
+	tp->mask = mask;
+	tp->succ = succ;
+	return tp;
+}
 
-	for (; r.height > 0; r.height--) {
-		memcpy(bmp + r.di, p->piece + r.si, r.width);
-		r.di += p->bitmap.width;
-		r.si += PIECE_WIDTH;
+static struct piece *render_tetmino_pieces(struct bitmap *bitmap, struct tetmino_piece *tp)
+{
+	struct piece *piece = NULL;
+
+	while (tp) {
+		render_tetmino_piece(bitmap, &tp->data.piece, tp->tetmino, tp->mask);
+		tp->data.piece.prev = piece;
+		piece = &tp->data.piece;
+		tp = tp->succ;
+	}
+
+	return piece;
+}
+
+static void remove_piece(struct bitmap *bitmap, struct piece *p)
+{
+	unsigned char *bmp = bitmap->bitmap;
+
+	while (p) {
+		struct copyrect r = p->r;
+
+		for (; r.height > 0; r.height--) {
+			memcpy(bmp + r.di, p->piece + r.si, r.width);
+			r.di += bitmap->width;
+			r.si += PIECE_WIDTH;
+		}
+
+		p = p->prev;
 	}
 }
 
-static void render_blocks(struct blocks *b)
+static void render_blocks(struct blocks *b, struct piece *p)
 {
-	int w = b->piece.bitmap.width;
-	int h = b->piece.bitmap.height;
-	unsigned char *back = b->piece.bitmap.bitmap;
-	unsigned char *front = b->piece.bitmap.bitmap + w * h;
+	int w = b->bitmap.width;
+	int h = b->bitmap.height;
+	unsigned char *back = b->bitmap.bitmap;
+	unsigned char *front = b->bitmap.bitmap + w * h;
 
 	if (!b->rendered) {
 		b->rendered = 1;
@@ -107,14 +135,12 @@ static void render_blocks(struct blocks *b)
 	}
 	drawtiles(front, back, w, h, b->x, b->y, &b->tiles);
 
-	remove_piece(&b->piece);
+	remove_piece(&b->bitmap, p);
 }
 
-void render_tetmino_blocks(struct blocks *b, const struct tetmino *t, int mask)
+void render_tetmino_blocks(struct blocks *b, struct tetmino_piece *tp)
 {
-	render_tetmino_piece(&b->piece, t, mask);
-
-	render_blocks(b);
+	render_blocks(b, render_tetmino_pieces(&b->bitmap, tp));
 }
 
 void render_cleared_blocks(struct bitmap *bitmap, int row, blocks_row mask)
