@@ -19,7 +19,7 @@ struct tetmino *init_tetmino(struct tetmino *t, int piece, int row, int col, int
 	t->falling = delay;
 	t->lock_delay_move = 0;
 	t->lock_delay_step = 0;
-	t->climbed = 0;
+	t->climbed = 2;
 	return t;
 }
 
@@ -195,14 +195,13 @@ int control_tetmino(struct tetmino *t, const blocks_row *blocks, enum action a)
 		t->falling = 0;
 		t->lock_delay_move = 0;
 		t->lock_delay_step = 0;
+		return lock;
 	}
 
 	/* any successful shifting or rotation */
 	if (moved) {
 		t->lock_delay_move = LOCK_DELAY_MOVE + 1;
 
-		/* floor kicked - prevent "infinite spin" */
-		drop(t, blocks, t->climbed);
 	}
 	return moved | dropped;
 }
@@ -247,6 +246,10 @@ int update_tetmino(struct tetmino *t, const blocks_row *blocks, int gravity)
 
 void unfloat_tetmino(struct tetmino *t, const blocks_row *blocks)
 {
-	if (!t->falling)
+	if (!t->falling) {
+		/* floor kicked */
+		drop(t, blocks, t->climbed);
+
 		t->falling = drop_height(t, blocks, 1);
+	}
 }

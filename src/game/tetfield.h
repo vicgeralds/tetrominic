@@ -11,11 +11,9 @@
 /* how many times a blocked move is retried */
 #define WALL_CHARGE_FRAMES 4
 
-/* number of rows that can be occupied. NOTE: extra row needed for collision
- * test after floor kick
- */
+/* number of rows that can be occupied */
 #define PLAYFIELD_HEIGHT 24
-#define SPAWN_ROW (PLAYFIELD_HEIGHT - 5)
+#define SPAWN_ROW (PLAYFIELD_HEIGHT - 4)
 
 /* time until appearance of next tetromino */
 #define SPAWN_DELAY	25

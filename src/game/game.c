@@ -24,7 +24,7 @@ static void init_game_blocks(struct game *game)
 static struct tetmino *init_game_tetmino(struct game *game)
 {
 	return init_tetmino(&game->piece.data.tetmino,
-		rand7(), SPAWN_ROW + 2, GAME_SPAWN_COL, 0);
+		rand7(), SPAWN_ROW + 1, GAME_SPAWN_COL, 0);
 
 }
 
