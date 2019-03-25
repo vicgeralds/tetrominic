@@ -14,6 +14,7 @@
 struct game {
 	struct tetgrid tetgrid;
 	struct tetfield tetfield;
+	struct tetmino next_tetmino;
 	struct tetmino_piece piece, next_piece;
 	struct blocks blocks;
 	unsigned char bitmap[GAME_BITMAP_SIZE];

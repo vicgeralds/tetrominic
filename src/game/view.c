@@ -95,9 +95,9 @@ static struct piece *render_tetmino_pieces(struct bitmap *bitmap, struct tetmino
 	struct piece *piece = NULL;
 
 	while (tp) {
-		render_tetmino_piece(bitmap, &tp->data.piece, tp->tetmino, tp->mask);
-		tp->data.piece.prev = piece;
-		piece = &tp->data.piece;
+		render_tetmino_piece(bitmap, &tp->piece, tp->tetmino, tp->mask);
+		tp->piece.prev = piece;
+		piece = &tp->piece;
 		tp = tp->succ;
 	}
 

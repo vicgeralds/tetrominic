@@ -21,11 +21,14 @@ static void init_game_blocks(struct game *game)
 	memset(game->bitmap + top_size, 0x80, w * h1);
 }
 
-static struct tetmino *init_game_tetmino(struct game *game)
+static struct tetmino *spawn_piece(struct game *game)
 {
-	return init_tetmino(&game->piece.data.tetmino,
-		rand7(), SPAWN_ROW + 1, GAME_SPAWN_COL, 0);
-
+	enter_tetfield(&game->tetfield, game->next_tetmino.piece, GAME_SPAWN_COL);
+	return init_tetmino(&game->next_tetmino,
+		rand7(),
+		game->tetfield.mino.row + PIECE_HEIGHT,
+		GAME_SPAWN_COL,
+		game->tetfield.gravity);
 }
 
 void init_game(struct game *game, int gravity)
@@ -36,9 +39,7 @@ void init_game(struct game *game, int gravity)
 
 	init_tetgrid(&game->tetgrid, GAME_TETGRID_COLS);
 	game->tetfield = tetfield;
-	enter_tetfield(&game->tetfield, rand7(), GAME_SPAWN_COL);
-	init_tetmino_piece(&game->next_piece,
-		init_game_tetmino(game), 0x7f,
+	init_tetmino_piece(&game->next_piece, spawn_piece(game), 0x7f,
 		init_tetmino_piece(&game->piece, &game->tetfield.mino, 0x77, NULL));
 	init_game_blocks(game);
 }
@@ -67,6 +68,26 @@ static enum action get_action(const char *input)
 	return NO_ACTION;
 }
 
+static int update_next_tetmino(struct game *game)
+{
+	struct tetfield *tf = &game->tetfield;
+
+	if (tf->state == TETFIELD_SPAWN) {
+		return 0;
+	}
+	if (game->next_tetmino.row > SPAWN_ROW + 1) {
+		game->next_tetmino.falling--;
+		if (game->next_tetmino.falling > 0) {
+			return 0;
+		}
+		game->next_tetmino.row--;
+		game->next_tetmino.falling = tf->gravity;
+		return 1;
+	}
+
+	return 0;
+}
+
 int update_game(struct game *game, const char *input)
 {
 	struct tetgrid *grid = &game->tetgrid;
@@ -90,19 +111,13 @@ int update_game(struct game *game, const char *input)
 		if (tf->state == TETFIELD_TOP_OUT) {
 			return 0;
 		}
-		render_tetmino_piece(&b->bitmap, &game->next_piece.data.piece, &tf->mino, 0x7f);
+		render_tetmino_piece(&b->bitmap, &game->piece.piece, &tf->mino, 0x7f);
 		lock_tetfield(tf, grid);
-		enter_tetfield(tf, game->piece.data.tetmino.piece, GAME_SPAWN_COL);
+		spawn_piece(game);
 		render_tetmino_blocks(b, &game->piece);
-		init_game_tetmino(game);
-	} else if (cleared > 0 || (changed.moved | changed.dropped | changed.displaced)) {
-		struct tetmino next = game->piece.data.tetmino;
-		int row = tf->mino.row - tf->mino.climbed + PIECE_HEIGHT;
-		if (row > next.row) {
-			game->piece.data.tetmino.row = row;
-		}
+	} else if (update_next_tetmino(game) || cleared > 0 ||
+			(changed.moved | changed.dropped | changed.displaced)) {
 		render_tetmino_blocks(b, &game->next_piece);
-		game->piece.data.tetmino = next;
 	}
 	fflush(stdout);
 	return 1;

@@ -20,10 +20,7 @@ struct piece {
 };
 
 struct tetmino_piece {
-	union {
-		struct piece piece;
-		struct tetmino tetmino;
-	} data;
+	struct piece piece;
 	const struct tetmino *tetmino;
 	int mask;
 	struct tetmino_piece *succ;
