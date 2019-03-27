@@ -78,19 +78,6 @@ static void update_prespawn(struct tetfield *tf, enum action a)
 	}
 }
 
-/* initial rotation */
-static enum action spawn_orient(struct tetfield *tf)
-{
-	unsigned unrotated = tetmino_shapes[tf->mino.piece][0];
-	if (tf->mino.shape != unrotated) {
-		if (drop_height(&tf->mino, tf->blocks, 1))
-			return (tf->mino.shape == tetmino_shapes[tf->mino.piece][1]) ?
-				ROTATE_CW : ROTATE_CCW;
-		tf->mino.shape = unrotated;
-	}
-	return NO_ACTION;
-}
-
 static enum action update_move(struct tetfield *tf, enum action a)
 {
 	enum action moved = NO_ACTION;
