@@ -18,59 +18,59 @@ static int is_empty_row(const struct tetgrid *grid, int row)
 	return (grid->blocks[row] & grid->blocks[0]) == 0;
 }
 
-static void stop_retrying_action(struct tetfield *f)
+static void stop_retrying_action(struct tetfield *tf)
 {
-	if (f->last_action != NO_ACTION) {
-		f->last_action = NO_ACTION;
-		f->timeout[RETRY_ACTION] += SPAWN_DELAY - AUTOREPEAT_FRAMES;
+	if (tf->last_action != NO_ACTION) {
+		tf->last_action = NO_ACTION;
+		tf->timeout[RETRY_ACTION] += SPAWN_DELAY - AUTOREPEAT_FRAMES;
 	}
 }
 
-void enter_tetfield(struct tetfield *f, int piece, int col)
+void enter_tetfield(struct tetfield *tf, int piece, int col)
 {
-	init_tetmino(&f->mino, piece, SPAWN_ROW + 1, col, SPAWN_DELAY + 1);
-	f->state = TETFIELD_SPAWN;
+	init_tetmino(&tf->mino, piece, SPAWN_ROW + 1, col, SPAWN_DELAY + 1);
+	tf->state = TETFIELD_SPAWN;
 	/* prevent last action from cancelling spawn delay */
-	stop_retrying_action(f);
+	stop_retrying_action(tf);
 }
 
-static enum action make_move(struct tetfield *f, enum action a)
+static enum action make_move(struct tetfield *tf, enum action a)
 {
-	if (f->timeout[a] == 0 && control_tetmino(&f->mino, f->blocks, a)) {
-		if (f->last_action == NO_ACTION || f->timeout[f->last_action] == 0) {
-			f->last_action = a;
+	if (tf->timeout[a] == 0 && control_tetmino(&tf->mino, tf->blocks, a)) {
+		if (tf->last_action == NO_ACTION || tf->timeout[tf->last_action] == 0) {
+			tf->last_action = a;
 		}
-		f->timeout[RETRY_ACTION] = AUTOREPEAT_FRAMES;
-		f->timeout[a] = AUTOREPEAT_FRAMES;
+		tf->timeout[RETRY_ACTION] = AUTOREPEAT_FRAMES;
+		tf->timeout[a] = AUTOREPEAT_FRAMES;
 		return a;
 	}
 	return NO_ACTION;
 }
 
-static void dec_timeout(struct tetfield *f)
+static void dec_timeout(struct tetfield *tf)
 {
 	int i;
 	for (i=0; i < END_ACTION; i++) {
-		if (f->timeout[i])
-			f->timeout[i]--;
+		if (tf->timeout[i])
+			tf->timeout[i]--;
 	}
 }
 
 /* process moves before the piece is spawned */
-static void update_prespawn(struct tetfield *f, enum action a)
+static void update_prespawn(struct tetfield *tf, enum action a)
 {
-	if (!f->timeout[RETRY_ACTION]) {
+	if (!tf->timeout[RETRY_ACTION]) {
 		switch (a) {
 		case ROTATE_CW:
 		case ROTATE_CCW:
-			f->last_action = a;
+			tf->last_action = a;
 			break;
 		case MOVE_RIGHT:
 		case MOVE_LEFT:
 		case HARDDROP:
 		case SOFTDROP:
-			f->mino.falling = 1;
-			f->timeout[a] = 1;
+			tf->mino.falling = 1;
+			tf->timeout[a] = 1;
 			break;
 		default:
 			break;
@@ -79,40 +79,40 @@ static void update_prespawn(struct tetfield *f, enum action a)
 }
 
 /* initial rotation */
-static enum action spawn_orient(struct tetfield *f)
+static enum action spawn_orient(struct tetfield *tf)
 {
-	unsigned unrotated = tetmino_shapes[f->mino.piece][0];
-	if (f->mino.shape != unrotated) {
-		if (drop_height(&f->mino, f->blocks, 1))
-			return (f->mino.shape == tetmino_shapes[f->mino.piece][1]) ?
+	unsigned unrotated = tetmino_shapes[tf->mino.piece][0];
+	if (tf->mino.shape != unrotated) {
+		if (drop_height(&tf->mino, tf->blocks, 1))
+			return (tf->mino.shape == tetmino_shapes[tf->mino.piece][1]) ?
 				ROTATE_CW : ROTATE_CCW;
-		f->mino.shape = unrotated;
+		tf->mino.shape = unrotated;
 	}
 	return NO_ACTION;
 }
 
-static enum action update_move(struct tetfield *f, enum action a)
+static enum action update_move(struct tetfield *tf, enum action a)
 {
 	enum action moved = NO_ACTION;
 
-	if (f->timeout[a]) {
-		if (f->timeout[RETRY_ACTION]) {
-			moved = make_move(f, f->last_action);
+	if (tf->timeout[a]) {
+		if (tf->timeout[RETRY_ACTION]) {
+			moved = make_move(tf, tf->last_action);
 		}
 		if (a != NO_ACTION) {
-			f->last_action = a;
-			f->timeout[RETRY_ACTION] = AUTOREPEAT_FRAMES;
+			tf->last_action = a;
+			tf->timeout[RETRY_ACTION] = AUTOREPEAT_FRAMES;
 		}
-	} else if ((moved = make_move(f, a)) == NO_ACTION) {
+	} else if ((moved = make_move(tf, a)) == NO_ACTION) {
 		if (a != NO_ACTION) {
-			f->last_action = a;
-			f->timeout[RETRY_ACTION] = WALL_CHARGE_FRAMES;
+			tf->last_action = a;
+			tf->timeout[RETRY_ACTION] = WALL_CHARGE_FRAMES;
 		}
 	}
 
 	/* set timer to block actions for next tetromino during spawn delay */
-	if (f->timeout[RETRY_ACTION] == 1) {
-		stop_retrying_action(f);
+	if (tf->timeout[RETRY_ACTION] == 1) {
+		stop_retrying_action(tf);
 	}
 
 	return moved;
@@ -124,82 +124,82 @@ static int is_movable(const struct tetmino *t)
 }
 
 /* check that there are no unfinished line clears at occupied rows */
-static int is_lockable(const struct tetfield *f)
+static int is_lockable(const struct tetfield *tf)
 {
-	const blocks_row *blocks = f->blocks + f->mino.row;
+	const blocks_row *blocks = tf->blocks + tf->mino.row;
 	int i;
 	for (i=0; i < PIECE_HEIGHT; i++) {
-		if (!(blocks[i] & LINE_CLEAR_MARK) && tetmino_has_row(f->mino.shape, i))
+		if (!(blocks[i] & LINE_CLEAR_MARK) && tetmino_has_row(tf->mino.shape, i))
 			return 0;
 	}
 	return 1;
 }
 
-int run_tetfield(struct tetfield *f, struct tetgrid *grid,
+int run_tetfield(struct tetfield *tf, struct tetgrid *grid,
 		      enum action a, struct changed *out)
 {
-	dec_timeout(f);
+	dec_timeout(tf);
 	out->moved = NO_ACTION;
 	out->dropped = 0;
 	out->displaced = 0;
 
-	switch (f->state) {
+	switch (tf->state) {
 	case TETFIELD_SPAWN:
-		update_prespawn(f, a);
-		if (f->mino.falling > 1) {
+		update_prespawn(tf, a);
+		if (tf->mino.falling > 1) {
 			/* stop spawn timer during line clear animation */
 			if (grid->clearing) return 1;
 
-			f->mino.falling--;
+			tf->mino.falling--;
 			return 1;
 		}
-		out->dropped = update_tetmino(&f->mino, f->blocks, f->gravity);
+		out->dropped = update_tetmino(&tf->mino, tf->blocks, tf->gravity);
 		if (!out->dropped) {
-			f->state = TETFIELD_TOP_OUT;
+			tf->state = TETFIELD_TOP_OUT;
 			return 0;
 		}
-		f->timeout[RETRY_ACTION] = 1;
-		f->state = TETFIELD_MOVE;
-		out->moved = update_move(f, a);
+		tf->timeout[RETRY_ACTION] = 1;
+		tf->state = TETFIELD_MOVE;
+		out->moved = update_move(tf, a);
 		break;
 	case TETFIELD_MOVE:
-		out->moved = update_move(f, a);
-		out->dropped = update_tetmino(&f->mino, f->blocks, f->gravity);
+		out->moved = update_move(tf, a);
+		out->dropped = update_tetmino(&tf->mino, tf->blocks, tf->gravity);
 		break;
 	case TETFIELD_PLACED:
 		/* accepting no more actions */
-		out->dropped = control_tetmino(&f->mino, f->blocks, HARDDROP);
+		out->dropped = control_tetmino(&tf->mino, tf->blocks, HARDDROP);
 		break;
 	case TETFIELD_TOP_OUT:
 		return 0;
 	}
 
 	/* resolve collision upwards */
-	while (!can_move_tetmino(&f->mino, f->blocks, 0)) {
-		if (f->mino.row >= SPAWN_ROW) {
-			f->state = TETFIELD_TOP_OUT;
+	while (!can_move_tetmino(&tf->mino, tf->blocks, 0)) {
+		if (tf->mino.row >= SPAWN_ROW) {
+			tf->state = TETFIELD_TOP_OUT;
 			return 0;
 		}
-		f->mino.row++;
+		tf->mino.row++;
 		out->displaced = 1;
 	}
-	unfloat_tetmino(&f->mino, grid->blocks);
+	unfloat_tetmino(&tf->mino, grid->blocks);
 
 	/* return 0 on lock condition */
-	return is_movable(&f->mino) || (f->state = TETFIELD_PLACED, !is_lockable(f));
+	return is_movable(&tf->mino) || (tf->state = TETFIELD_PLACED, !is_lockable(tf));
 }
 
-int lock_tetfield(struct tetfield *f, struct tetgrid *grid)
+int lock_tetfield(struct tetfield *tf, struct tetgrid *grid)
 {
 	blocks_row *blocks = grid->blocks;
 	int num_lines_cleared = 0;
 	int i;
 
 	/* add blocks */
-	xor_tetmino(&f->mino, blocks);
+	xor_tetmino(&tf->mino, blocks);
 
 	/* find completed lines */
-	blocks += f->mino.row;
+	blocks += tf->mino.row;
 	for (i=0; i < PIECE_HEIGHT; i++) {
 		blocks_row b = blocks[i] + 1;
 		if (!b) {
