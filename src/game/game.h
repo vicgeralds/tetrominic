@@ -1,4 +1,5 @@
 #include "tetmino.h"
+#include "tetgrid.h"
 #include "tetfield.h"
 #include "view.h"
 

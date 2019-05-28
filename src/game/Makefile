@@ -1,13 +1,15 @@
 CCFLAGS = $(CFLAGS) $(CPPFLAGS)
-OBJS = game.o tetfield.o tetmino.o random.o view.o
+OBJS = game.o tetfield.o tetgrid.o tetmino.o random.o view.o
 
 game.a: $(OBJS)
 	$(AR) rs game.a $(OBJS)
 
-game.o: game.c game.h tetmino.h tetfield.h random.h view.h ../terminal/textgfx.h ../terminal/terminal.h
+game.o: game.c game.h tetmino.h tetgrid.h tetfield.h random.h view.h ../terminal/textgfx.h ../terminal/terminal.h
 	$(CC) $(CCFLAGS) -c game.c
-tetfield.o: tetfield.c tetmino.h tetfield.h
+tetfield.o: tetfield.c tetmino.h tetgrid.h tetfield.h
 	$(CC) $(CCFLAGS) -c tetfield.c
+tetgrid.o: tetgrid.c tetmino.h tetgrid.h
+	$(CC) $(CCFLAGS) -c tetgrid.c
 tetmino.o: tetmino.c tetmino.h
 	$(CC) $(CCFLAGS) -c tetmino.c
 random.o: random.c random.h

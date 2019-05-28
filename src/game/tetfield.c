@@ -1,22 +1,6 @@
 #include "tetmino.h"
+#include "tetgrid.h"
 #include "tetfield.h"
-
-void init_tetgrid(struct tetgrid *grid, int cols)
-{
-	int i;
-	grid->cols = cols;
-	grid->clearing = 0;
-	grid->delay = 0;
-	grid->blocks[0] = MAKE_FLOOR(cols);
-	for (i=1; i < PLAYFIELD_HEIGHT; i++)
-		grid->blocks[i] = MAKE_WALLS(cols);
-}
-
-static int is_empty_row(const struct tetgrid *grid, int row)
-{
-	/* floor has all bits set between the walls */
-	return (grid->blocks[row] & grid->blocks[0]) == 0;
-}
 
 static void stop_retrying_action(struct tetfield *tf)
 {
@@ -36,7 +20,7 @@ void enter_tetfield(struct tetfield *tf, int piece, int col)
 
 static enum action make_move(struct tetfield *tf, enum action a)
 {
-	if (tf->timeout[a] == 0 && control_tetmino(&tf->mino, tf->blocks, a)) {
+	if (tf->timeout[a] == 0 && control_tetmino(&tf->mino, tf->grid->blocks, a)) {
 		if (tf->last_action == NO_ACTION || tf->timeout[tf->last_action] == 0) {
 			tf->last_action = a;
 		}
@@ -113,7 +97,7 @@ static int is_movable(const struct tetmino *t)
 /* check that there are no unfinished line clears at occupied rows */
 static int is_lockable(const struct tetfield *tf)
 {
-	const blocks_row *blocks = tf->blocks + tf->mino.row;
+	const blocks_row *blocks = tf->grid->blocks + tf->mino.row;
 	int i;
 	for (i=0; i < PIECE_HEIGHT; i++) {
 		if (!(blocks[i] & LINE_CLEAR_MARK) && tetmino_has_row(tf->mino.shape, i))
@@ -122,9 +106,10 @@ static int is_lockable(const struct tetfield *tf)
 	return 1;
 }
 
-int run_tetfield(struct tetfield *tf, struct tetgrid *grid,
-		      enum action a, struct changed *out)
+int run_tetfield(struct tetfield *tf, enum action a, struct changed *out)
 {
+	struct tetgrid *grid = tf->grid;
+
 	dec_timeout(tf);
 	out->moved = NO_ACTION;
 	out->dropped = 0;
@@ -140,7 +125,7 @@ int run_tetfield(struct tetfield *tf, struct tetgrid *grid,
 			tf->mino.falling--;
 			return 1;
 		}
-		out->dropped = update_tetmino(&tf->mino, tf->blocks, tf->gravity);
+		out->dropped = update_tetmino(&tf->mino, grid->blocks, tf->gravity);
 		if (!out->dropped) {
 			tf->state = TETFIELD_TOP_OUT;
 			return 0;
@@ -151,18 +136,18 @@ int run_tetfield(struct tetfield *tf, struct tetgrid *grid,
 		break;
 	case TETFIELD_MOVE:
 		out->moved = update_move(tf, a);
-		out->dropped = update_tetmino(&tf->mino, tf->blocks, tf->gravity);
+		out->dropped = update_tetmino(&tf->mino, grid->blocks, tf->gravity);
 		break;
 	case TETFIELD_PLACED:
 		/* accepting no more actions */
-		out->dropped = control_tetmino(&tf->mino, tf->blocks, HARDDROP);
+		out->dropped = control_tetmino(&tf->mino, grid->blocks, HARDDROP);
 		break;
 	case TETFIELD_TOP_OUT:
 		return 0;
 	}
 
 	/* resolve collision upwards */
-	while (!can_move_tetmino(&tf->mino, tf->blocks, 0)) {
+	while (!can_move_tetmino(&tf->mino, grid->blocks, 0)) {
 		if (tf->mino.row >= SPAWN_ROW) {
 			tf->state = TETFIELD_TOP_OUT;
 			return 0;
@@ -176,8 +161,9 @@ int run_tetfield(struct tetfield *tf, struct tetgrid *grid,
 	return is_movable(&tf->mino) || (tf->state = TETFIELD_PLACED, !is_lockable(tf));
 }
 
-int lock_tetfield(struct tetfield *tf, struct tetgrid *grid)
+int lock_tetfield(struct tetfield *tf)
 {
+	struct tetgrid *grid = tf->grid;
 	blocks_row *blocks = grid->blocks;
 	int num_lines_cleared = 0;
 	int i;
@@ -200,67 +186,3 @@ int lock_tetfield(struct tetfield *tf, struct tetgrid *grid)
 	return num_lines_cleared;
 }
 
-/* return empty columns as set bits */
-static blocks_row invert_blocks(const struct tetgrid *grid, int row)
-{
-	blocks_row b = -1;
-	return b ^ (grid->blocks[row] | LINE_CLEAR_MARK);
-}
-
-static blocks_row grow_cleared_blocks(struct tetgrid *grid, int row)
-{
-	blocks_row b = invert_blocks(grid, row);
-	if (b)
-		grid->blocks[row] &= ~((b << 1) | (b >> 1));
-	else {
-		/* odd or even width */
-		b = (grid->cols & 1) ? 1 : 3;
-		/* start clearing from middle */
-		grid->blocks[row] ^= b << (grid->cols/2 + LEFT_WALL_WIDTH - 1);
-	}
-
-	return (b ^ invert_blocks(grid, row)) >> LEFT_WALL_WIDTH;
-}
-
-int update_line_clears(struct tetgrid *grid)
-{
-	int cleared = 0;
-	int clearing = grid->clearing;
-	int i;
-
-	if (grid->delay > 0) {
-		grid->delay--;
-		return 0;
-	}
-	for (i=1; clearing > 0 && i < PLAYFIELD_HEIGHT; i++) {
-		if (!(grid->blocks[i] & LINE_CLEAR_MARK)) {
-			cleared = i;
-			clearing--;
-			if (!is_empty_row(grid, i)) {
-				grid->delay = BLOCK_CLEAR_DELAY;
-			}
-		}
-	}
-	return cleared;
-}
-
-blocks_row shift_cleared_blocks(struct tetgrid *grid, int row)
-{
-	if (is_empty_row(grid, row)) {
-		/* remove cleared row */
-		for (; row + 1 < PLAYFIELD_HEIGHT; row++) {
-			grid->blocks[row] = grid->blocks[row + 1];
-		}
-		grid->clearing--;
-		return 0;
-	}
-	return grow_cleared_blocks(grid, row);
-}
-
-int next_cleared_row(const struct tetgrid *grid, int row)
-{
-	do row--;
-	while (grid->blocks[row] & LINE_CLEAR_MARK);
-	/* row 0 always has the LINE_CLEAR_MARK bit reversed */
-	return row;
-}

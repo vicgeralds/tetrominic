@@ -34,7 +34,7 @@ static struct tetmino *spawn_piece(struct game *game)
 void init_game(struct game *game, int gravity)
 {
 	struct tetfield tetfield = { { 0 } };
-	tetfield.blocks = game->tetgrid.blocks;
+	tetfield.grid = &game->tetgrid;
 	tetfield.gravity = gravity;
 
 	init_tetgrid(&game->tetgrid, GAME_TETGRID_COLS);
@@ -107,12 +107,12 @@ int update_game(struct game *game, const char *input)
 	if (!strcmp(input, "q")) {
 		return 0;
 	}
-	if (!run_tetfield(tf, grid, get_action(input), &changed)) {
+	if (!run_tetfield(tf, get_action(input), &changed)) {
 		if (tf->state == TETFIELD_TOP_OUT) {
 			return 0;
 		}
 		render_tetmino_piece(&b->bitmap, &game->piece.piece, &tf->mino, 0x7f);
-		lock_tetfield(tf, grid);
+		lock_tetfield(tf);
 		spawn_piece(game);
 		render_tetmino_blocks(b, &game->piece);
 	} else if (update_next_tetmino(game) || cleared > 0 ||
