@@ -91,6 +91,9 @@ static int floor_kick(struct tetmino *t, unsigned rotated, unsigned box)
 	    !(rotated & (box << PIECE_WIDTH)) && !t->climbed) {
 		t->climbed = 1;
 		t->row++;
+		if (t->falling) {
+			t->falling = 1;
+		}
 		return 1;
 	}
 	return 0;
