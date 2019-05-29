@@ -39,6 +39,7 @@ void init_game(struct game *game, int gravity)
 
 	init_tetgrid(&game->tetgrid, GAME_TETGRID_COLS);
 	game->tetfield = tetfield;
+	game->next_tetmino.piece = rand7();
 	init_tetmino_piece(&game->next_piece, spawn_piece(game), 0x7f,
 		init_tetmino_piece(&game->piece, &game->tetfield.mino, 0x77, NULL));
 	init_game_blocks(game);
