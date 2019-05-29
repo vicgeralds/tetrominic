@@ -4,6 +4,11 @@
 
 static void stop_retrying_action(struct tetfield *tf)
 {
+	if (tf->last_action == HARDDROP) {
+		tf->last_action = NO_ACTION;
+		tf->timeout[RETRY_ACTION] = 0;
+		tf->timeout[HARDDROP] += SPAWN_DELAY - AUTOREPEAT_FRAMES;
+	}
 	if (tf->last_action != NO_ACTION) {
 		tf->last_action = NO_ACTION;
 		tf->timeout[RETRY_ACTION] += SPAWN_DELAY - AUTOREPEAT_FRAMES;
@@ -53,8 +58,10 @@ static void update_prespawn(struct tetfield *tf, enum action a)
 		case MOVE_LEFT:
 		case HARDDROP:
 		case SOFTDROP:
-			tf->mino.falling = 1;
-			tf->timeout[a] = 1;
+			if (!tf->timeout[a]) {
+				tf->mino.falling = 1;
+				tf->timeout[a] = 1;
+			}
 			break;
 		default:
 			break;
@@ -79,11 +86,6 @@ static enum action update_move(struct tetfield *tf, enum action a)
 			tf->last_action = a;
 			tf->timeout[RETRY_ACTION] = WALL_CHARGE_FRAMES;
 		}
-	}
-
-	/* set timer to block actions for next tetromino during spawn delay */
-	if (tf->timeout[RETRY_ACTION] == 1) {
-		stop_retrying_action(tf);
 	}
 
 	return moved;
@@ -143,6 +145,11 @@ int run_tetfield(struct tetfield *tf, enum action a, struct changed *out)
 		break;
 	case TETFIELD_TOP_OUT:
 		return 0;
+	}
+
+	/* set timer to block actions for next tetromino during spawn delay */
+	if (tf->timeout[RETRY_ACTION] == 1) {
+		stop_retrying_action(tf);
 	}
 
 	update_removable_rows(grid, &tf->mino);
