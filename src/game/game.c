@@ -115,8 +115,7 @@ int update_game(struct game *game, const char *input)
 		lock_tetfield(tf);
 		spawn_piece(game);
 		render_tetmino_blocks(b, &game->piece);
-	} else if (update_next_tetmino(game) || cleared > 0 ||
-			(changed.moved | changed.dropped | changed.displaced)) {
+	} else if (update_next_tetmino(game) || cleared > 0 || (changed.moved | changed.dropped)) {
 		render_tetmino_blocks(b, &game->next_piece);
 	}
 	fflush(stdout);

@@ -21,6 +21,9 @@ struct tetgrid {
 /* initialize grid of width cols (excluding walls) */
 void init_tetgrid(struct tetgrid *, int cols);
 
+/* check for collision with tetromino when removing cleared rows */
+void update_removable_rows(struct tetgrid *, const struct tetmino *);
+
 /* tick line clear timer.
    return row number > 0 when there are cleared blocks to process */
 int update_line_clears(struct tetgrid *);

@@ -36,7 +36,6 @@ struct tetfield {
 struct changed {
 	enum action moved;	/* changed position or orientation */
 	int dropped;		/* number of rows auto-dropped */
-	int displaced;		/* collision resolved */
 };
 
 /* init next tetromino */

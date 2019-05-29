@@ -40,6 +40,25 @@ static blocks_row grow_cleared_blocks(struct tetgrid *grid, int row)
 	return (b ^ invert_blocks(grid, row)) >> LEFT_WALL_WIDTH;
 }
 
+void update_removable_rows(struct tetgrid *grid, const struct tetmino *t)
+{
+	struct tetgrid grid2 = *grid;
+	int row = update_line_clears(&grid2);
+
+	/* find row that causes collision with tetmino */
+	while (row > 0 && (shift_cleared_blocks(&grid2, row) || can_move_tetmino(t, grid2.blocks, 0))) {
+		row = next_cleared_row(grid, row);
+	}
+	/* stop remaining empty rows from being cleared */
+	while (row > 0) {
+		if (is_empty_row(grid, row)) {
+			grid->blocks[row] |= LINE_CLEAR_MARK;
+			grid->clearing--;
+		}
+		row = next_cleared_row(grid, row);
+	}
+}
+
 int update_line_clears(struct tetgrid *grid)
 {
 	int cleared = 0;
@@ -50,13 +69,20 @@ int update_line_clears(struct tetgrid *grid)
 		grid->delay--;
 		return 0;
 	}
+	/* find cleared row to start with */
 	for (i=1; clearing > 0 && i < PLAYFIELD_HEIGHT; i++) {
 		if (!(grid->blocks[i] & LINE_CLEAR_MARK)) {
 			cleared = i;
 			clearing--;
-			if (!is_empty_row(grid, i)) {
-				grid->delay = BLOCK_CLEAR_DELAY;
-			}
+			grid->delay = BLOCK_CLEAR_DELAY;
+		}
+	}
+	/* find empty rows to remove on next update */
+	for (i = cleared + 1; i + 1 < PLAYFIELD_HEIGHT; i++) {
+		if (is_empty_row(grid, i) && !is_empty_row(grid, i + 1)) {
+			grid->blocks[i] ^= LINE_CLEAR_MARK;
+			grid->clearing++;
+
 		}
 	}
 	return cleared;

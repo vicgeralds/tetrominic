@@ -113,7 +113,6 @@ int run_tetfield(struct tetfield *tf, enum action a, struct changed *out)
 	dec_timeout(tf);
 	out->moved = NO_ACTION;
 	out->dropped = 0;
-	out->displaced = 0;
 
 	switch (tf->state) {
 	case TETFIELD_SPAWN:
@@ -146,16 +145,7 @@ int run_tetfield(struct tetfield *tf, enum action a, struct changed *out)
 		return 0;
 	}
 
-	/* resolve collision upwards */
-	while (!can_move_tetmino(&tf->mino, grid->blocks, 0)) {
-		if (tf->mino.row >= SPAWN_ROW) {
-			tf->state = TETFIELD_TOP_OUT;
-			return 0;
-		}
-		tf->mino.row++;
-		out->displaced = 1;
-	}
-	unfloat_tetmino(&tf->mino, grid->blocks);
+	update_removable_rows(grid, &tf->mino);
 
 	/* return 0 on lock condition */
 	return is_movable(&tf->mino) || (tf->state = TETFIELD_PLACED, !is_lockable(tf));
