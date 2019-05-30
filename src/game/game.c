@@ -13,7 +13,6 @@ static void init_game_blocks(struct game *game)
 	const int top_size = w * (h2 - h1);
 
 	blocks.bitmap.bitmap = game->bitmap;
-	blocks.x = terminal.width / 2 - w;
 
 	game->blocks = blocks;
 
@@ -96,6 +95,8 @@ int update_game(struct game *game, const char *input)
 	struct blocks *b = &game->blocks;
 	struct changed changed;
 	int cleared = update_line_clears(grid);
+
+	b->x = terminal.width / 2 - GAME_TETGRID_COLS;
 
 	if (cleared > 0) {
 		int row = cleared;

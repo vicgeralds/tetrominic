@@ -41,17 +41,17 @@ static int restore_input_mode()
 	return tcsetattr(STDIN_FILENO, TCSANOW, &saved_term_attr) == 0;
 }
 
-static void get_terminal_size()
+static void get_terminal_size(int fd)
 {
 #if defined(TIOCGSIZE)
 	struct ttysize tty;
-	if (!ioctl(STDOUT_FILENO, TIOCGSIZE, &tty)) {
+	if (!ioctl(fd, TIOCGSIZE, &tty)) {
 		terminal.width  = tty.ts_cols;
 		terminal.height = tty.ts_lines;
 	}
 #elif defined(TIOCGWINSZ)
 	struct winsize win;
-	if (!ioctl(STDOUT_FILENO, TIOCGWINSZ, &win)) {
+	if (!ioctl(fd, TIOCGWINSZ, &win)) {
 		terminal.width  = win.ws_col;
 		terminal.height = win.ws_row;
 	}
@@ -70,10 +70,12 @@ int init_terminal()
 
 void setup_terminal()
 {
+	int fd = STDOUT_FILENO;
 	if (set_input_mode()) {
 		hide_cursor();
+		fd = STDIN_FILENO;
 	}
-	get_terminal_size();
+	get_terminal_size(fd);
 	set_text_attr(0);
 	clearscreen();
 }
