@@ -83,6 +83,11 @@ void setup_terminal()
 void restore_terminal()
 {
 	set_text_attr(0);
+	if (terminal.lines != 1 || terminal.x0 != terminal.cursor_x || terminal.y0 != terminal.cursor_y) {
+		moveto(terminal.x0, terminal.y0 + terminal.lines);
+	}
+	terminal.cursor_y = 0;
+	terminal.y0 = 0;
 	clearscreen();
 	if (restore_input_mode()) {
 		show_cursor();
@@ -94,6 +99,7 @@ void print_error(const char *s)
 {
 	int saved_errno = errno;
 	set_text_attr(0);
+	terminal.lines = 1;
 	clearscreen();
 	fflush(stdout);
 	errno = saved_errno;

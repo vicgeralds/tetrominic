@@ -28,6 +28,7 @@ static int process_signal()
 	signal_caught = 0;
 
 	if (sig == SIGINT || sig == SIGTERM || sig == SIGTSTP) {
+		terminal.lines = 0;
 		restore_terminal();
 
 		/* call default signal handler */
@@ -119,8 +120,6 @@ int main(int argc, char **argv)
 
 	run_game_loop();
 
-	terminal.y0 += terminal.lines;
-	terminal.lines = 0;
 	restore_terminal();
 
 	return EXIT_SUCCESS;

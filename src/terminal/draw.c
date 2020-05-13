@@ -108,6 +108,11 @@ void drawtiles(unsigned char *front, const unsigned char *back,
 		const unsigned char *nextRow = back + w;
 		line.x = x;
 
+		if (line.y < terminal.y0) {
+			if (front) front += w;
+			back = nextRow;
+		}
+
 		while (back < nextRow) {
 			if (front) {
 				/* advance cursor position when unchanged */
