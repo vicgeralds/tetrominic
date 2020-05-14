@@ -12,12 +12,21 @@ void drawchar(int c, int attr, struct tg_buffer *line)
 	line->buf[line->len++] = c;
 }
 
+static int line_is_visible(const struct tg_buffer *line)
+{
+	int y0 = terminal.y0;
+	if (terminal.lines > terminal.height) {
+		y0 += terminal.lines - terminal.height;
+	}
+	return line->y >= y0;
+}
+
 void flush_tg(struct tg_buffer *line)
 {
 	int len  = line->len;
 	int attr = line->attr;
 
-	if (len > 0) {
+	if (len > 0 && line_is_visible(line)) {
 		line->buf[len] = '\0';
 
 		moveto(line->x, line->y);
@@ -107,11 +116,6 @@ void drawtiles(unsigned char *front, const unsigned char *back,
 	for (; h > 0; h--) {
 		const unsigned char *nextRow = back + w;
 		line.x = x;
-
-		if (line.y < terminal.y0) {
-			if (front) front += w;
-			back = nextRow;
-		}
 
 		while (back < nextRow) {
 			if (front) {

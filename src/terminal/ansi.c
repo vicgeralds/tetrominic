@@ -43,7 +43,7 @@ void moveto(int x, int y)
 		terminal.lines = terminal.height;
 	}
 	if (terminal.y0 > terminal.cursor_y) {
-		terminal.cursor_y = terminal.y0;
+		terminal.y0 = terminal.cursor_y;
 	}
 
 	if (y > terminal.cursor_y) {
@@ -51,7 +51,6 @@ void moveto(int x, int y)
 	}
 
 	if (y < terminal.y0) y = terminal.y0;
-	if (x < terminal.x0) x = terminal.x0;
 
 	dx = x - terminal.cursor_x;
 	dy = y - terminal.cursor_y;
@@ -79,12 +78,17 @@ void cleartoeol()
 
 void clearscreen()
 {
-	moveto(terminal.x0, terminal.y0);
-	if (terminal.y0 > 0 && terminal.lines > 1) {
-		/* request cursor position */
-		fputs(CSI "6n", stdout);
+	static int cleared_lines;
+
+	if (terminal.y0 > 0) {
+		terminal.lines = terminal.y0 + (
+			cleared_lines > terminal.lines ? cleared_lines : terminal.lines
+		);
+		terminal.y0 = 0;
 	}
+	moveto(terminal.x0, terminal.y0);
 	fputs(CSI "J", stdout);
+	cleared_lines = terminal.lines;
 	terminal.lines = 1;
 }
 

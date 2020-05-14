@@ -128,31 +128,6 @@ static size_t read_into_buffer(struct terminal_input *inp, size_t len)
 	return 0;
 }
 
-static int report_cursor_position(const char *s, size_t len)
-{
-	if (s[0] == ESC && s[1] == '[' && s[len - 1] == 'R') {
-		int row = atoi(s + 2) - 1;
-		int y0 = terminal.y0;
-
-		if (row > y0) row = y0;
-
-		if (row > 0) {
-			terminal.y0 -= row;
-			terminal.lines += row;
-			moveto(terminal.cursor_x, terminal.y0);
-		}
-		if (y0 > terminal.y0) {
-			set_text_attr(0);
-			/* avoids requesting cursor position again */
-			terminal.lines = 1;
-
-			clearscreen();
-		}
-		return 1;
-	}
-	return 0;
-}
-
 size_t read_terminal_seq(struct terminal_input *inp)
 {
 	char *buf = inp->next.s;
@@ -178,10 +153,6 @@ size_t read_terminal_seq(struct terminal_input *inp)
 		}
 		/* move remaining input to next buffer */
 		memcpy(buf, inp->current.s + len, inp->next_length + 1);
-		/* handle cursor position response */
-		if (report_cursor_position(inp->current.s, len)) {
-			len = 0;
-		}
 	}
 	inp->current.s[len] = '\0';
 
