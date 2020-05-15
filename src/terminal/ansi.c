@@ -14,6 +14,7 @@ static void nlto(int y)
 {
 	int dy = y - terminal.cursor_y;
 	if (dy > 0) {
+		set_text_attr(0);
 		for (; dy > 0; dy--)
 			putchar('\n');
 		terminal.cursor_x = terminal.x0;
