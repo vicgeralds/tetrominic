@@ -1,3 +1,7 @@
+
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
@@ -75,7 +79,12 @@ void setup_terminal()
 		hide_cursor();
 		fd = STDIN_FILENO;
 	}
+#ifdef __EMSCRIPTEN__
+	terminal.width = EM_ASM_INT(return process.stdout.columns);
+	terminal.height = EM_ASM_INT(return process.stdout.rows);
+#else
 	get_terminal_size(fd);
+#endif
 	set_text_attr(0);
 	clearscreen();
 }
@@ -92,7 +101,7 @@ void restore_terminal()
 	if (restore_input_mode()) {
 		show_cursor();
 	}
-	fflush(stdout);
+	flush_output();
 }
 
 void print_error(const char *s)
@@ -100,7 +109,7 @@ void print_error(const char *s)
 	int saved_errno = errno;
 	set_text_attr(0);
 	clearscreen();
-	fflush(stdout);
+	flush_output();
 	errno = saved_errno;
 	perror(s);
 }

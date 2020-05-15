@@ -11,6 +11,7 @@ struct terminal {
 	void (*puttext)(const char *);
 	int cursor_x, cursor_y;
 	int x0, y0;
+	int need_flush;
 };
 
 extern struct terminal terminal;
@@ -27,6 +28,7 @@ void moveto(int x, int y);
 
 void cleartoeol();
 void clearscreen();
+void flush_output();
 
 /* Select Graphic Rendition */
 

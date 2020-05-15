@@ -8,6 +8,11 @@
 #include <time.h>
 #include <errno.h>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#include <stdio.h>
+#endif
+
 #include "terminal/terminal.h"
 #include "terminal/acstext.h"
 #include "terminal/input.h"
@@ -80,6 +85,26 @@ static void wait_one_frame()
 	}
 }
 
+#ifdef __EMSCRIPTEN__
+EM_JS(void, read_keypress, (char *out), {
+	var key = keystrokes.shift();
+	if (key) stringToUTF8(key, out, 16);
+});
+
+static void do_main_loop(void *arg)
+{
+	struct game *game = (struct game *) arg;
+	char input[16] = "";
+
+	read_keypress(input);
+
+	if (!update_game(game, input)) {
+		restore_terminal();
+		exit(EXIT_SUCCESS);
+	}
+}
+#endif
+
 static void run_game_loop()
 {
 	struct terminal_input input = {{""}};
@@ -87,19 +112,9 @@ static void run_game_loop()
 
 	init_game(&game, 20);
 
-	while (update_game(&game, input.current.s)) {
-		wait_one_frame();
-		process_signal();
-		read_terminal_seq(&input);
-		process_signal();
-		if (terminal.lines == 1) {
-			game.blocks.rendered = 0;
-		}
-	}
-}
-
-int main(int argc, char **argv)
-{
+#ifdef __EMSCRIPTEN__
+	emscripten_set_main_loop_arg(do_main_loop, &game, TETFIELD_FPS, 1);
+#else
 	signal(SIGINT, catch_signal);
 	signal(SIGTERM, catch_signal);
 	signal(SIGCONT, catch_signal);
@@ -108,6 +123,17 @@ int main(int argc, char **argv)
 	signal(SIGWINCH, catch_signal);
 #endif
 
+	while (update_game(&game, input.current.s)) {
+		wait_one_frame();
+		process_signal();
+		read_terminal_seq(&input);
+		process_signal();
+	}
+#endif
+}
+
+int main(int argc, char **argv)
+{
 	setlocale(LC_CTYPE, "");
 
 	if (!init_terminal()) {

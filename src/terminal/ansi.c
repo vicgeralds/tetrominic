@@ -19,6 +19,7 @@ static void nlto(int y)
 			putchar('\n');
 		terminal.cursor_x = terminal.x0;
 		terminal.cursor_y = y;
+		terminal.need_flush = 0;
 	}
 }
 
@@ -94,6 +95,21 @@ void clearscreen()
 	fputs(CSI "J", stdout);
 	prev_lines = terminal.lines;
 	terminal.lines = 1;
+	terminal.need_flush = 1;
+}
+
+void flush_output()
+{
+	if (terminal.need_flush) {
+		if (terminal.cursor_y + 1 >= terminal.y0 + terminal.lines) {
+			fputs(CSI "A", stdout);
+			terminal.cursor_y--;
+		}
+		/* flush with a newline */
+		nlto(terminal.cursor_y + 1);
+	}
+
+	fflush(stdout);
 }
 
 void set_text_attr(int attr)

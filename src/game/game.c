@@ -46,22 +46,22 @@ void init_game(struct game *game, int gravity)
 
 static enum action get_action(const char *input)
 {
-	if (!strcmp(input, "j") || !strcmp(input, "\033[D")) {
+	if (!strcmp(input, "j") || !strcmp(input, "left")) {
 		return MOVE_LEFT;
 	}
-	if (!strcmp(input, "k") || !strcmp(input, "\033[A")) {
+	if (!strcmp(input, "k") || !strcmp(input, "up")) {
 		return ROTATE_CW;
 	}
 	if (!strcmp(input, "i")) {
 		return ROTATE_CCW;
 	}
-	if (!strcmp(input, "l") || !strcmp(input, "\033[C")) {
+	if (!strcmp(input, "l") || !strcmp(input, "right")) {
 		return MOVE_RIGHT;
 	}
-	if (!strcmp(input, "m") || !strcmp(input, "\033[B")) {
+	if (!strcmp(input, "m") || !strcmp(input, "down")) {
 		return SOFTDROP;
 	}
-	if (!strcmp(input, " ")) {
+	if (!strcmp(input, "space")) {
 		return HARDDROP;
 	}
 
@@ -98,6 +98,10 @@ int update_game(struct game *game, const char *input)
 
 	b->x = terminal.width / 2 - GAME_TETGRID_COLS;
 
+	if (terminal.lines == 1) {
+		b->rendered = 0;
+	}
+
 	if (cleared > 0) {
 		int row = cleared;
 		while (row > 0) {
@@ -120,6 +124,6 @@ int update_game(struct game *game, const char *input)
 	} else if (update_next_tetmino(game) || cleared > 0 || (changed.moved | changed.dropped)) {
 		render_tetmino_blocks(b, &game->next_piece);
 	}
-	fflush(stdout);
+	flush_output();
 	return 1;
 }
