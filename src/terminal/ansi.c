@@ -19,7 +19,6 @@ static void nlto(int y)
 			putchar('\n');
 		terminal.cursor_x = terminal.x0;
 		terminal.cursor_y = y;
-		terminal.need_flush = 0;
 	}
 }
 
@@ -77,11 +76,11 @@ void cleartoeol()
 
 void clearscreen()
 {
-	static int prev_lines;
+	static int saved_lines;
 
 	if (terminal.y0 > 0 || terminal.lines == 1) {
 		terminal.lines = terminal.y0 + (
-			prev_lines > terminal.lines ? prev_lines : terminal.lines
+			saved_lines > terminal.lines ? saved_lines : terminal.lines
 		);
 		terminal.y0 = 0;
 	}
@@ -93,14 +92,13 @@ void clearscreen()
 	}
 	moveto(terminal.x0, terminal.y0);
 	fputs(CSI "J", stdout);
-	prev_lines = terminal.lines;
+	saved_lines = terminal.lines;
 	terminal.lines = 1;
-	terminal.need_flush = 1;
 }
 
 void flush_output()
 {
-	if (terminal.need_flush) {
+	if (terminal.cursor_x > terminal.x0) {
 		if (terminal.cursor_y + 1 >= terminal.y0 + terminal.lines) {
 			fputs(CSI "A", stdout);
 			terminal.cursor_y--;

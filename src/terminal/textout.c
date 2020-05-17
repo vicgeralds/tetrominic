@@ -57,12 +57,8 @@ void puttext_unicode(const char *s)
 {
 	char buf[20];
 
-	if (*s) {
-		while (*s) {
-			s += convert_text(s, buf, sizeof(buf));
-			fputs(buf, stdout);
-		}
-
-		terminal.need_flush = s[-1] != '\n';
+	while (*s) {
+		s += convert_text(s, buf, sizeof(buf));
+		fputs(buf, stdout);
 	}
 }

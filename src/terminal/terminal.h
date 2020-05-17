@@ -11,7 +11,6 @@ struct terminal {
 	void (*puttext)(const char *);
 	int cursor_x, cursor_y;
 	int x0, y0;
-	int need_flush;
 };
 
 extern struct terminal terminal;
