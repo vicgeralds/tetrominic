@@ -1,4 +1,3 @@
-
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #endif
@@ -21,6 +20,9 @@ static struct termios saved_term_attr;
 
 static int set_input_mode()
 {
+#ifdef __EMSCRIPTEN__
+	return EM_ASM_INT(return process.stdin.isTTY ? process.stdin.setRawMode(true) && 1 : 0);
+#else
 	struct termios attr = saved_term_attr;
 
 	if (attr.c_lflag == 0) {
@@ -34,15 +36,20 @@ static int set_input_mode()
 	attr.c_cc[VTIME] = 2;
 
 	return tcsetattr(STDIN_FILENO, TCSANOW, &attr) == 0;
+#endif
 }
 
 static int restore_input_mode()
 {
+#ifdef __EMSCRIPTEN__
+	return EM_ASM_INT(return process.stdin.isTTY ? process.stdin.setRawMode(false) && 1 : 0);
+#else
 	if (saved_term_attr.c_lflag == 0) {
 		return 0;
 	}
 
 	return tcsetattr(STDIN_FILENO, TCSANOW, &saved_term_attr) == 0;
+#endif
 }
 
 static void get_terminal_size(int fd)
@@ -64,10 +71,16 @@ static void get_terminal_size(int fd)
 
 int init_terminal()
 {
+#ifdef __EMSCRIPTEN__
+	if (!EM_ASM_INT(return +process.stdout.isTTY || 0)) {
+		return 0;
+	}
+#else
 	if (!isatty(STDOUT_FILENO)) {
 		return 0;
 	}
 	tcgetattr(STDIN_FILENO, &saved_term_attr);
+#endif
 	setup_terminal();
 	return 1;
 }
