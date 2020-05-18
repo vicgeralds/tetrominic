@@ -100,7 +100,7 @@ static void do_main_loop(void *arg)
 
 	if (!update_game(game, input)) {
 		restore_terminal();
-		exit(EXIT_SUCCESS);
+		emscripten_force_exit(EXIT_SUCCESS);
 	}
 }
 #endif

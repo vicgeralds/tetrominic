@@ -2,7 +2,7 @@ tetrominic: main.o game terminal
 	$(CC) $(LDFLAGS) main.o game/game.a terminal/terminal.a -o tetrominic
 
 tetrominic.js: main.o game terminal module.js
-	$(CC) $(LDFLAGS) main.o game/game.a terminal/terminal.a -o tetrominic.js -s ENVIRONMENT=node --pre-js module.js
+	$(CC) $(LDFLAGS) main.o game/game.a terminal/terminal.a -o tetrominic.js -s ENVIRONMENT=node -s EXIT_RUNTIME=1 --pre-js module.js
 
 main.o: main.c terminal/terminal.h terminal/acstext.h terminal/input.h game/game.h
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c main.c
