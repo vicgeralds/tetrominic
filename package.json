@@ -1,0 +1,24 @@
+{
+  "name": "tetrominic",
+  "version": "0.1.0",
+  "description": "tetromino game",
+  "main": "lib/tetrominic.js",
+  "bin": {
+    "tetrominic": "cli.js"
+  },
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "build": "make"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vicgeralds/tetrominic.git"
+  },
+  "author": "Victor Geraldsson",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vicgeralds/tetrominic/issues"
+  }
+}
