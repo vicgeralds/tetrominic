@@ -21,7 +21,10 @@ static struct termios saved_term_attr;
 static int set_input_mode()
 {
 #ifdef __EMSCRIPTEN__
-	return EM_ASM_INT(return process.stdin.isTTY ? process.stdin.setRawMode(true) && 1 : 0);
+	return EM_ASM_INT(
+		if (process.stdin.isTTY) process.stdin.setRawMode(true);
+		return +process.stdin.isTTY || 0;
+	);
 #else
 	struct termios attr = saved_term_attr;
 
@@ -42,7 +45,10 @@ static int set_input_mode()
 static int restore_input_mode()
 {
 #ifdef __EMSCRIPTEN__
-	return EM_ASM_INT(return process.stdin.isTTY ? process.stdin.setRawMode(false) && 1 : 0);
+	return EM_ASM_INT(
+		if (process.stdin.isTTY) process.stdin.setRawMode(false);
+		return +process.stdin.isTTY || 0;
+	);
 #else
 	if (saved_term_attr.c_lflag == 0) {
 		return 0;
