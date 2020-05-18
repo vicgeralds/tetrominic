@@ -158,3 +158,24 @@ size_t read_terminal_seq(struct terminal_input *inp)
 
 	return len;
 }
+
+const char *read_terminal_keypress(struct terminal_input *inp)
+{
+	size_t len = read_terminal_seq(inp);
+	const char *s = inp->current.s;
+
+	if (!strcmp(s, " ")) {
+		return "space";
+	}
+
+	if (len == 3 && s[0] == ESC && s[1] == '[') {
+		switch (s[2]) {
+		case 'A': return "up";
+		case 'B': return "down";
+		case 'C': return "right";
+		case 'D': return "left";
+		}
+	}
+
+	return s;
+}

@@ -25,3 +25,5 @@ struct terminal_input {
  * Returns: length of string stored in current
  */
 size_t read_terminal_seq(struct terminal_input *);
+
+const char *read_terminal_keypress(struct terminal_input *);

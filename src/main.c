@@ -108,6 +108,7 @@ static void do_main_loop(void *arg)
 static void run_game_loop()
 {
 	struct terminal_input input = {{""}};
+	const char *keypress = input.current.s;
 	struct game game;
 
 	init_game(&game, 20);
@@ -123,10 +124,10 @@ static void run_game_loop()
 	signal(SIGWINCH, catch_signal);
 #endif
 
-	while (update_game(&game, input.current.s)) {
+	while (update_game(&game, keypress)) {
 		wait_one_frame();
 		process_signal();
-		read_terminal_seq(&input);
+		keypress = read_terminal_keypress(&input);
 		process_signal();
 	}
 #endif
