@@ -143,7 +143,7 @@ int main(int argc, char **argv)
 	detect_charset();
 
 	/* seed random number generator */
-	srand(time(NULL));
+	srandom(time(NULL));
 
 	run_game_loop();
 
