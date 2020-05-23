@@ -88,6 +88,14 @@ static int update_next_tetmino(struct game *game)
 	return 0;
 }
 
+static void render_score(const struct tetfield *tf)
+{
+	moveto(terminal.x0, terminal.y0);
+	set_text_attr(0);
+	printf("Score: %lu\n", tf->score);
+	terminal.cursor_y++;
+}
+
 int update_game(struct game *game, const char *input)
 {
 	struct tetgrid *grid = &game->tetgrid;
@@ -100,6 +108,8 @@ int update_game(struct game *game, const char *input)
 
 	if (terminal.lines == 1) {
 		b->rendered = 0;
+		render_score(tf);
+		render_tetmino_blocks(b, &game->next_piece);
 	}
 
 	if (cleared > 0) {
@@ -109,6 +119,7 @@ int update_game(struct game *game, const char *input)
 			render_cleared_blocks(&b->bitmap, row, mask);
 			row = next_cleared_row(grid, row);
 		}
+		render_score(tf);
 	}
 	if (!strcmp(input, "q")) {
 		return 0;

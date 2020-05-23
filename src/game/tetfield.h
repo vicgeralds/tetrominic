@@ -27,6 +27,7 @@ struct tetfield {
 	} state;
 	enum action last_action;
 	unsigned char timeout[END_ACTION + 1];
+	unsigned long score;
 };
 
 /* timeout[NO_ACTION] is number of times to retry last action */

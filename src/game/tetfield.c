@@ -180,6 +180,11 @@ int lock_tetfield(struct tetfield *tf)
 			grid->delay += BLOCK_CLEAR_DELAY;
 		}
 	}
+
+	/* update score */
+	tf->score += num_lines_cleared * num_lines_cleared * grid->cols *
+		TETFIELD_FPS / tf->gravity;
+
 	return num_lines_cleared;
 }
 
