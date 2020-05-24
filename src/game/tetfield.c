@@ -158,6 +158,11 @@ int run_tetfield(struct tetfield *tf, enum action a, struct changed *out)
 	return is_movable(&tf->mino) || (tf->state = TETFIELD_PLACED, !is_lockable(tf));
 }
 
+static void levelup(struct tetfield *tf)
+{
+	if (tf->gravity > 1) tf->gravity *= 0.9;
+}
+
 int lock_tetfield(struct tetfield *tf)
 {
 	struct tetgrid *grid = tf->grid;
@@ -184,6 +189,13 @@ int lock_tetfield(struct tetfield *tf)
 	/* update score */
 	tf->score += num_lines_cleared * num_lines_cleared * grid->cols *
 		TETFIELD_FPS / tf->gravity;
+
+	/* update level */
+	tf->pieces++;
+	if (tf->pieces >= 25 && num_lines_cleared) {
+		levelup(tf);
+		tf->pieces = 0;
+	}
 
 	return num_lines_cleared;
 }
