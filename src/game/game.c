@@ -93,6 +93,8 @@ static void render_score(const struct tetfield *tf)
 	moveto(terminal.x0, terminal.y0);
 	set_text_attr(0);
 	printf("Score: %lu\n", tf->score);
+	printf("Gravity: %d\n", tf->gravity);
+	terminal.cursor_y++;
 	terminal.cursor_y++;
 }
 
@@ -108,6 +110,8 @@ int update_game(struct game *game, const char *input)
 
 	if (terminal.lines == 1) {
 		b->rendered = 0;
+		//draw_acs("x22", 1, b->x - 1, 0, FG_COLOR(0) | BOLD);
+		//draw_acs("x22", 1, b->x + GAME_TETGRID_COLS * 2, 0, FG_COLOR(0) | BOLD);
 		render_score(tf);
 		render_tetmino_blocks(b, &game->next_piece);
 	}

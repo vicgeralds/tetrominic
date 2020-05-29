@@ -160,7 +160,10 @@ int run_tetfield(struct tetfield *tf, enum action a, struct changed *out)
 
 static void levelup(struct tetfield *tf)
 {
-	if (tf->gravity > 1) tf->gravity *= 0.9;
+	if (tf->gravity > 1) {
+		tf->gravity *= 0.9;
+		tf->pieces = 0;
+	}
 }
 
 int lock_tetfield(struct tetfield *tf)
@@ -187,14 +190,13 @@ int lock_tetfield(struct tetfield *tf)
 	}
 
 	/* update score */
-	tf->score += num_lines_cleared * num_lines_cleared * grid->cols *
-		TETFIELD_FPS / tf->gravity;
+	tf->score += (num_lines_cleared << num_lines_cleared) *
+		(grid->cols * grid->cols + tf->pieces) / tf->gravity;
 
 	/* update level */
 	tf->pieces++;
 	if (tf->pieces >= 25 && num_lines_cleared) {
 		levelup(tf);
-		tf->pieces = 0;
 	}
 
 	return num_lines_cleared;
