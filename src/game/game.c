@@ -107,11 +107,14 @@ int update_game(struct game *game, const char *input)
 	int cleared = update_line_clears(grid);
 
 	b->x = terminal.width / 2 - GAME_TETGRID_COLS;
+	b->y = 1;
 
 	if (terminal.lines == 1) {
+		int attr = FG_COLOR(0) | BOLD;
 		b->rendered = 0;
-		//draw_acs("x22", 1, b->x - 1, 0, FG_COLOR(0) | BOLD);
-		//draw_acs("x22", 1, b->x + GAME_TETGRID_COLS * 2, 0, FG_COLOR(0) | BOLD);
+		draw_acs("x22", 1, b->x - 1, b->y, attr);
+		draw_acs("x22", 1, b->x + GAME_TETGRID_COLS * 2, b->y, attr);
+		draw_acs("lq19k", 22, b->x - 1, 0, attr);
 		render_score(tf);
 		render_tetmino_blocks(b, &game->next_piece);
 	}
