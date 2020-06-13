@@ -43,6 +43,9 @@ void moveto(int x, int y)
 		terminal.y0 += terminal.lines - terminal.height;
 		terminal.lines = terminal.height;
 	}
+	if (terminal.y0 > terminal.cursor_y) {
+		terminal.y0 = terminal.cursor_y;
+	}
 
 	if (y > terminal.cursor_y) {
 		grow_lines(y);
@@ -78,17 +81,11 @@ void clearscreen()
 {
 	static int saved_lines;
 
-	if (terminal.y0 > 0 || terminal.lines == 1) {
+	if (terminal.y0 > 0) {
 		terminal.lines = terminal.y0 + (
 			saved_lines > terminal.lines ? saved_lines : terminal.lines
 		);
 		terminal.y0 = 0;
-	}
-        if (terminal.lines >= terminal.height) {
-		/* Move cursor to upper left corner */
-		fputs(CSI "H", stdout);
-		terminal.cursor_x = terminal.x0;
-		terminal.cursor_y = terminal.lines - terminal.height;
 	}
 	moveto(terminal.x0, terminal.y0);
 	fputs(CSI "J", stdout);
