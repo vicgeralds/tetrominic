@@ -115,6 +115,7 @@ int update_game(struct game *game, const char *input)
 		draw_acs("x22", 1, b->x - 1, b->y, attr);
 		draw_acs("x22", 1, b->x + GAME_TETGRID_COLS * 2, b->y, attr);
 		draw_acs("lq19k", 22, b->x - 1, 0, attr);
+		draw_acs("mq19j", 22, b->x - 1, b->y + GAME_BLOCKS_HEIGHT, attr);
 		render_score(tf);
 		render_tetmino_blocks(b, &game->next_piece);
 	}
