@@ -15,7 +15,7 @@ struct tetmino *init_tetmino(struct tetmino *t, int piece, int row, int col, int
 	t->shape = tetmino_shapes[piece][0];
 	t->piece = piece;
 	t->row = row;
-	t->col = col;
+	t->col = col + ((tetmino_shapes[piece][1] & 0x1111) ? 1 : 0);
 	t->falling = delay;
 	t->lock_delay_move = 0;
 	t->lock_delay_step = 0;
