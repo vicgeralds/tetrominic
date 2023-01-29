@@ -32,7 +32,7 @@ static blocks_row grow_cleared_blocks(struct tetgrid *grid, int row)
 		grid->blocks[row] &= ~((b << 1) | (b >> 1));
 	else {
 		/* odd or even width */
-		b = (grid->cols & 1) ? 1 : 3;
+		b = (grid->cols & 1) ? 2 : 3;
 		/* start clearing from middle */
 		grid->blocks[row] ^= b << (grid->cols/2 + LEFT_WALL_WIDTH - 1);
 	}
