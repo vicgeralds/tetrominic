@@ -25,7 +25,7 @@ struct tetmino *init_tetmino(struct tetmino *t, int piece, int row, int col, int
 
 int tetmino_has_row(unsigned shape, int i)
 {
-	int shift = (PIECE_HEIGHT - 1 - i) * PIECE_WIDTH;
+	int shift = i * PIECE_WIDTH;
 	return (shape >> shift) % (1 << PIECE_WIDTH);
 }
 
@@ -35,7 +35,7 @@ static unsigned get_blocks_box(const blocks_row *blocks, int col)
 	unsigned box = 0, row_mask = (1 << PIECE_WIDTH) - 1;
 	int i;
 	for (i=0; i < PIECE_HEIGHT; i++)
-		box = (box << PIECE_WIDTH) | ((blocks[i] >> col) & row_mask);
+		box |= ((blocks[i] >> col) & row_mask) << (i * PIECE_WIDTH);
 
 	return box;
 }
@@ -45,8 +45,8 @@ static void xor_blocks_box(blocks_row *blocks, int col, unsigned shape)
 {
 	unsigned row_mask = (1 << PIECE_WIDTH) - 1;
 	int i;
-	for (i = PIECE_HEIGHT; i > 0; i--) {
-		blocks[i-1] ^= (shape & row_mask) << col;
+	for (i = 0; i < PIECE_HEIGHT; i++) {
+		blocks[i] ^= (shape & row_mask) << col;
 		shape >>= PIECE_WIDTH;
 	}
 }
@@ -70,15 +70,14 @@ int drop_height(const struct tetmino *t, const blocks_row *blocks, int max)
 
 	if (max > 0) {
 		unsigned box = get_blocks_box(blocks += t->row - 1, t->col);
+		unsigned row_mask = (1 << PIECE_WIDTH) - 1;
 
 		while (!(t->shape & box)) {
 			h++;
 			if (h == max)
 				break;
-			box = (box >> PIECE_WIDTH) |
-			      (blocks[-h] >> t->col
-			       << (PIECE_HEIGHT-1) * PIECE_WIDTH);
-			box &= (1U << PIECE_HEIGHT * PIECE_WIDTH) - 1;
+			box = (box << PIECE_WIDTH) |
+			      ((blocks[-h] >> t->col) & row_mask);
 		}
 	}
 	return h;

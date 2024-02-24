@@ -5,30 +5,30 @@
 
 /* orientations */
 
-#define TETMINO_I  0x0F00	/* I    #      O    */
+#define TETMINO_I  0x00F0	/* I    #      O    */
 #define TETMINO_I2 0x2222	/*      #           */
 				/* #### #       ##  */
-#define TETMINO_O  0x6600	/*      #       ##  */
+#define TETMINO_O  0x0066	/*      #       ##  */
 
-#define TETMINO_J  0x4700	/* J                */
-#define TETMINO_J2 0x3220	/*      #  #    ##  */
-#define TETMINO_J3 0x0710	/* ###  #  ###  #   */
-#define TETMINO_J4 0x2260	/*   # ##       #   */
+#define TETMINO_J  0x0074	/* J                */
+#define TETMINO_J2 0x0223	/*      #  #    ##  */
+#define TETMINO_J3 0x0170	/* ###  #  ###  #   */
+#define TETMINO_J4 0x0622	/*   # ##       #   */
 
-#define TETMINO_L  0x1700	/* L                */
-#define TETMINO_L2 0x2230	/*     ##    #  #   */
-#define TETMINO_L3 0x0740	/* ###  #  ###  #   */
-#define TETMINO_L4 0x6220	/* #    #       ##  */
+#define TETMINO_L  0x0071	/* L                */
+#define TETMINO_L2 0x0322	/*     ##    #  #   */
+#define TETMINO_L3 0x0470	/* ###  #  ###  #   */
+#define TETMINO_L4 0x0226	/* #    #       ##  */
 
-#define TETMINO_S  0x3600	/* S       Z        */
-#define TETMINO_S2 0x2310	/*     #        #   */
-#define TETMINO_Z  0x6300	/*  ## ##  ##  ##   */
-#define TETMINO_Z2 0x1320	/* ##   #   ## #    */
+#define TETMINO_S  0x0063	/* S       Z        */
+#define TETMINO_S2 0x0132	/*     #        #   */
+#define TETMINO_Z  0x0036	/*  ## ##  ##  ##   */
+#define TETMINO_Z2 0x0231	/* ##   #   ## #    */
 
-#define TETMINO_T  0x2700	/* T                */
-#define TETMINO_T2 0x2320	/*      #   #   #   */
-#define TETMINO_T3 0x0720	/* ### ##  ###  ##  */
-#define TETMINO_T4 0x2620	/*  #   #       #   */
+#define TETMINO_T  0x0072	/* T                */
+#define TETMINO_T2 0x0232	/*      #   #   #   */
+#define TETMINO_T3 0x0270	/* ### ##  ###  ##  */
+#define TETMINO_T4 0x0262	/*  #   #       #   */
 
 extern unsigned short tetmino_shapes[7][4];
 

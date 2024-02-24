@@ -37,11 +37,14 @@ static struct copyrect cliprect(int dw, int dh, int sw, int sh,
 static void make_piece(unsigned char *piece, unsigned bits)
 {
 	int n = PIECE_WIDTH * PIECE_HEIGHT;
+	int i;
 
-	for (; n > 0; n--) {
-		*piece = 0 - (bits & 1);
-		piece++;
-		bits >>= 1;
+	for (i = PIECE_HEIGHT; i > 0; i--) {
+		int j;
+		for (j = 0; j < PIECE_WIDTH; j++) {
+			piece[(i-1) * PIECE_WIDTH + j] = 0 - (bits & 1);
+			bits >>= 1;
+		}
 	}
 }
 
