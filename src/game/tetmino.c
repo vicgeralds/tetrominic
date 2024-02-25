@@ -86,8 +86,10 @@ int drop_height(const struct tetmino *t, const blocks_row *blocks, int max)
 /* doesn't handle the I piece! */
 static int floor_kick(struct tetmino *t, unsigned rotated, unsigned box)
 {
-	if ((rotated & box) >> (PIECE_HEIGHT-1) * PIECE_WIDTH &&
-	    !(rotated & (box << PIECE_WIDTH)) && !t->climbed) {
+	unsigned row_mask = (1 << PIECE_WIDTH) - 1;
+	
+	if ((rotated & box & row_mask) &&
+	    !((rotated << PIECE_WIDTH) & box) && !t->climbed) {
 		t->climbed = 1;
 		t->row++;
 		if (t->falling) {
