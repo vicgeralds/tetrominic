@@ -112,9 +112,9 @@ static int wall_kick(struct tetmino *t, unsigned rotated, unsigned box,
 		n = (t->shape == TETMINO_I2) ? -1 : 1;
 	else {
 		/* kick if exactly one of the columns overlaps */
-		if (overlap == (overlap & mask1))
+		if (overlap == (overlap & mask1) && !(t->shape & mask1))
 			n = 1;
-		if (overlap == (overlap & mask3))
+		if (overlap == (overlap & mask3) && !(t->shape & mask3))
 			n = -1;
 	}
 
