@@ -96,10 +96,16 @@ static void do_main_loop(void *arg)
 	struct game *game = (struct game *) arg;
 	char input[16] = "";
 
+	int not_ready = EM_ASM_INT({
+		return +!tetField
+	});
+	if (not_ready) return;
+
 	read_keypress(input);
 
 	if (!update_game(game, input)) {
 		restore_terminal();
+		emscripten_cancel_main_loop();
 		emscripten_force_exit(EXIT_SUCCESS);
 	}
 }

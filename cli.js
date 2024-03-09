@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
-const readline = require('readline')
-const { onkeypress } = require('./lib/tetrominic.js')
+import * as readline from 'node:readline'
+import tetrominic from './lib/tetrominic.cjs'
+const { onkeypress } = tetrominic
 
 readline.emitKeypressEvents(process.stdin)
 
