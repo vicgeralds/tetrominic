@@ -193,17 +193,24 @@ int update_game(struct game *game, const char *input)
 		return 0;
 	}
 #ifdef __EMSCRIPTEN__
-	int locked = EM_ASM_INT({
-		return +runTetField($0).locked
+	EM_ASM({
+		runTetField($0)
 	}, get_action(input));
 #endif
 	if (!run_tetfield(tf, get_action(input), &changed)) {
+#ifdef __EMSCRIPTEN__
+		assert(tf->state == EM_ASM_INT({
+			return tetField.state
+		}));
+#endif
 		if (tf->state == TETFIELD_TOP_OUT) {
 			return 0;
 		}
 		render_tetmino_piece(&b->bitmap, &game->piece.piece, &tf->mino, 0x7f);
 #ifdef __EMSCRIPTEN__
-		assert(locked);
+		assert(EM_ASM_INT({
+			return tetField.isLockable
+		}));
 		assert(changed.dropped == EM_ASM_INT({
 			return changed.dropped
 		}));
