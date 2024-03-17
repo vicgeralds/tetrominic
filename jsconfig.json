@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "nodenext",
+    "checkJs": true,
+    "strict": true
+  },
+  "include": ["lib/game/*"]
+}

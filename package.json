@@ -21,5 +21,8 @@
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/vicgeralds/tetrominic/issues"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.2"
   }
 }
