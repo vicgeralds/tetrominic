@@ -24,5 +24,8 @@
   },
   "devDependencies": {
     "typescript": "^5.4.2"
+  },
+  "dependencies": {
+    "uhtml": "^4.7.0"
   }
 }
