@@ -1,3 +1,6 @@
 *.o
 *.a
 tetrominic*
+.DS_Store
+node_modules/
+package-lock.json
