@@ -1,0 +1,93 @@
+.tetgrid {
+  position: relative;
+  width: 40vh;
+  height: 96vh;
+  box-shadow: inset 1vh 1vh 8vh black;
+  overflow: clip;
+  background: linear-gradient(to left, darkcyan, transparent 2%),
+    linear-gradient(to top, darkcyan, transparent 2%);
+  background-size: 4vh 4vh;
+  border: 2px solid darkcyan;
+  z-index: 1;
+}
+
+.blocks {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  font-family: monospace;
+  font-size: 4vh;
+  line-height: 1;
+  white-space: pre;
+}
+.blocks > div {
+  display: flex;
+  height: 1em;
+}
+
+.block {
+  background: currentcolor;
+  box-shadow:
+    0.075em 0.075em 0.15em 0 rgba(0, 0, 0, 0.5),
+    inset 0.075em 0.075em rgba(255, 255, 255, 0.2);
+  border-bottom: 0.075em solid;
+  overflow-x: clip;
+  position: relative;
+}
+.block::before {
+  content: "▒ ";
+  color: rgba(255, 255, 255, 0.1);
+  margin-left: 0.075em;
+  display: inline-block;
+  height: 100%;
+  overflow: clip;
+}
+.block::after {
+  content: " ";
+  position: absolute;
+  left: 0;
+  top: -0.075em;
+  width: 1em;
+  background: currentcolor;
+  z-index: -1;
+}
+.block.i {
+  color: #c51e14; /* red */
+}
+.block.t {
+  color: #c7c329; /* yellow */
+}
+.block.j {
+  color: #c7c7c7; /* white */
+}
+.block.l {
+  color: #c839c5; /* magenta */
+}
+.block.o {
+  color: #0a2fe4; /* blue */
+}
+.block.z {
+  color: #20c5c6; /* cyan */
+}
+.block.s {
+  color: #1dc121; /* green */
+}
+
+.piece {
+  filter: brightness(1.1) drop-shadow(0.1em 0.1em 0.2em rgba(0, 0, 0, 0.75));
+  padding-bottom: 0.075em;
+
+  .block {
+    box-shadow: inset 0.075em 0.075em rgba(255, 255, 255, 0.1);
+  }
+}
+
+.blocks > .cleared {
+  filter: brightness(0.8);
+  transition: filter 0.3s;
+
+  .block {
+    box-shadow: none;
+    overflow: clip;
+  }
+}

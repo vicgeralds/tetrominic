@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>tetrominic</title>
+    <link href="styles/blocks.css" rel="stylesheet" />
+    <style>
+      body {
+        background: darkslategray;
+        display: flex;
+        justify-content: center;
+      }
+    </style>
+    <script type="importmap">
+      {
+        "imports": {
+          "uhtml": "https://cdn.jsdelivr.net/npm/uhtml/index.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div class="tetgrid">
+      <div class="blocks"></div>
+      <div class="piece blocks"></div>
+    </div>
+    <script type="module" src="lib/main.js"></script>
+  </body>
+</html>
