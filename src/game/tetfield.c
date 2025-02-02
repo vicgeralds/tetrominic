@@ -166,6 +166,30 @@ static void levelup(struct tetfield *tf)
 	}
 }
 
+static int get_score_for_lines(struct tetfield *tf, int num_lines_cleared)
+{
+	int score = tf->grid->cols * num_lines_cleared;
+
+	while (num_lines_cleared > 2) {
+		score *= 2;
+		num_lines_cleared -= 2;
+	}
+
+	if (num_lines_cleared > 1) {
+		score *= 1.5;
+	}
+
+	int gravity = tf->gravity;
+
+	int level = (30 - gravity) * 10 / gravity;
+
+	if (level > 0) {
+		score *= level;
+	}
+
+	return score;
+}
+
 int lock_tetfield(struct tetfield *tf)
 {
 	struct tetgrid *grid = tf->grid;
@@ -190,8 +214,7 @@ int lock_tetfield(struct tetfield *tf)
 	}
 
 	/* update score */
-	tf->score += (num_lines_cleared << num_lines_cleared) *
-		(grid->cols * grid->cols + tf->pieces) / tf->gravity;
+	tf->score += get_score_for_lines(tf, num_lines_cleared);
 
 	/* update level */
 	tf->pieces++;

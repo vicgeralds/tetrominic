@@ -11,7 +11,7 @@ Module.print = function (s) {
 var tetField = null;
 var changed = null;
 
-async function enterTetField(piece) {
+async function enterTetField(piece, gravity) {
   if (!tetField) {
     const {TetField} = await import('./game/tetfield.js');
     const {Tetmino} = await import('./game/tetmino.js');
@@ -20,6 +20,7 @@ async function enterTetField(piece) {
     tetField.piece = new Tetmino();
   }
 
+  tetField.gravity = gravity;
   tetField.enter(new tetField.piece.constructor(piece));
   tetField.piece.col += 3;
 }

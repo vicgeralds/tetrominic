@@ -31,8 +31,8 @@ static struct tetmino *spawn_piece(struct game *game)
 	enter_tetfield(&game->tetfield, game->next_tetmino.piece, GAME_SPAWN_COL);
 #ifdef __EMSCRIPTEN__
 	EM_ASM({
-		enterTetField($0)
-	}, game->next_tetmino.piece);
+		enterTetField($0, $1)
+	}, game->next_tetmino.piece, game->tetfield.gravity);
 
 	if (EM_ASM_INT({ return tetField })) {
 		assert(game->tetfield.mino.col == LEFT_WALL_WIDTH + EM_ASM_INT({
@@ -139,7 +139,7 @@ static void render_score(const struct tetfield *tf)
 	moveto(terminal.x0, terminal.y0);
 	set_text_attr(0);
 	printf("Score: %lu\n", tf->score);
-	printf("Gravity: %d\n", tf->gravity);
+	printf("Speed: %d frames per row\n", tf->gravity);
 	terminal.cursor_y++;
 	terminal.cursor_y++;
 }
