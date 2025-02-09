@@ -2,7 +2,9 @@
   position: relative;
   width: 40vh;
   height: 96vh;
-  box-shadow: inset 1vh 1vh 8vh black;
+  box-shadow:
+    inset 1vh 1vh 8vh black,
+    inset 0 12vh darkcyan;
   overflow: clip;
   background: linear-gradient(to left, darkcyan, transparent 2%),
     linear-gradient(to top, darkcyan, transparent 2%);
