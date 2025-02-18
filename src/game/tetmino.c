@@ -222,9 +222,6 @@ int update_tetmino(struct tetmino *t, const blocks_row *blocks, int gravity)
 		return 0;
 	}
 
-	if (t->falling > gravity)
-		t->falling = gravity;
-
 	/* count down frames until drop */
 	t->falling--;
 	if (t->falling > 0)

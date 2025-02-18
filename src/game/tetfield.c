@@ -17,7 +17,10 @@ static void stop_retrying_action(struct tetfield *tf)
 
 void enter_tetfield(struct tetfield *tf, int piece, int col)
 {
-	init_tetmino(&tf->mino, piece, SPAWN_ROW + 1, col, SPAWN_DELAY + 1);
+	int delay = SPAWN_DELAY;
+	if (delay < tf->gravity)
+		delay = tf->gravity;
+	init_tetmino(&tf->mino, piece, SPAWN_ROW + 1, col, delay + 1);
 	tf->state = TETFIELD_SPAWN;
 	/* prevent last action from cancelling spawn delay */
 	stop_retrying_action(tf);
@@ -119,15 +122,14 @@ int run_tetfield(struct tetfield *tf, enum action a, struct changed *out)
 	switch (tf->state) {
 	case TETFIELD_SPAWN:
 		update_prespawn(tf, a);
-		if (tf->mino.falling > 1) {
+		if (tf->mino.falling > 1 && grid->clearing) {
 			/* stop spawn timer during line clear animation */
-			if (grid->clearing) return 1;
-
-			tf->mino.falling--;
-			return 1;
+			tf->mino.falling++;
 		}
 		out->dropped = update_tetmino(&tf->mino, grid->blocks, tf->gravity);
 		if (!out->dropped) {
+			if (is_movable(&tf->mino) || grid->clearing)
+				return 1;
 			tf->state = TETFIELD_TOP_OUT;
 			return 0;
 		}

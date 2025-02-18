@@ -12,7 +12,7 @@
 #define WALL_CHARGE_FRAMES 4
 
 /* time until appearance of next tetromino */
-#define SPAWN_DELAY	25
+#define SPAWN_DELAY	15
 
 /* a tetromino piece in a playfield */
 struct tetfield {
