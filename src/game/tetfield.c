@@ -185,6 +185,10 @@ static int get_score_for_lines(struct tetfield *tf, int num_lines_cleared)
 
 	int level = (30 - gravity) * 10 / gravity;
 
+	if (gravity < 5) {
+		level = (10 - gravity + tf->pieces / 25) * 10;
+	}
+
 	if (level > 0) {
 		score *= level;
 	}
