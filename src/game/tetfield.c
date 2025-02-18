@@ -26,10 +26,16 @@ void enter_tetfield(struct tetfield *tf, int piece, int col)
 	stop_retrying_action(tf);
 }
 
+static int is_retrying_action(struct tetfield *tf)
+{
+	enum action a = tf->last_action;
+	return a != NO_ACTION && tf->timeout[RETRY_ACTION] > tf->timeout[a];
+}
+
 static enum action make_move(struct tetfield *tf, enum action a)
 {
 	if (tf->timeout[a] == 0 && control_tetmino(&tf->mino, tf->grid->blocks, a)) {
-		if (tf->last_action == NO_ACTION || tf->timeout[tf->last_action] == 0) {
+		if (!is_retrying_action(tf) || tf->timeout[tf->last_action] == 0) {
 			tf->last_action = a;
 		}
 		tf->timeout[RETRY_ACTION] = AUTOREPEAT_FRAMES;
