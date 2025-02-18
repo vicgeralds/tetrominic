@@ -18,7 +18,7 @@ struct tetmino *init_tetmino(struct tetmino *t, int piece, int row, int col, int
 	t->col = col + ((tetmino_shapes[piece][1] & 0x1111) ? 1 : 0);
 	t->falling = delay;
 	t->lock_delay_move = 0;
-	t->lock_delay_step = 0;
+	t->lock_delay_step = LOCK_DELAY_STEP;
 	t->climbed = 2;
 	return t;
 }
@@ -205,26 +205,18 @@ int control_tetmino(struct tetmino *t, const blocks_row *blocks, enum action a)
 	/* any successful shifting or rotation */
 	if (moved) {
 		t->lock_delay_move = LOCK_DELAY_MOVE + 1;
-
 	}
 	return moved | dropped;
-}
-
-static void init_lock_delay(struct tetmino *t, int gravity)
-{
-	/* shorter initial lock delay at slower speeds */
-	int lock_delay = LOCK_DELAY_MOVE - gravity;
-	t->lock_delay_step = LOCK_DELAY_STEP;
-	if (lock_delay > t->lock_delay_move)
-		t->lock_delay_move = lock_delay;
 }
 
 int update_tetmino(struct tetmino *t, const blocks_row *blocks, int gravity)
 {
 	unfloat_tetmino(t, blocks);
+
+	if (t->lock_delay_move > 0)
+		t->lock_delay_move--;
+
 	if (!t->falling) {
-		if (t->lock_delay_move > 0)
-			t->lock_delay_move--;
 		if (t->lock_delay_step > 0)
 			t->lock_delay_step--;
 		return 0;
@@ -240,10 +232,16 @@ int update_tetmino(struct tetmino *t, const blocks_row *blocks, int gravity)
 
 	if (drop(t, blocks, 1)) {
 		t->falling = gravity;
+		if (t->lock_delay_move < LOCK_DELAY_MOVE)
+			t->lock_delay_move = LOCK_DELAY_MOVE;
+		if (t->lock_delay_move < t->lock_delay_step)
+			t->lock_delay_move = t->lock_delay_step;
 		return 1;
 	} else {
 		t->falling = 0;
-		init_lock_delay(t, gravity);
+		t->lock_delay_step = LOCK_DELAY_STEP;
+		if (t->lock_delay_move < MIN_LOCK_DELAY)
+			t->lock_delay_move = MIN_LOCK_DELAY;
 		return 0;
 	}
 }

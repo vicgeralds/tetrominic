@@ -42,6 +42,7 @@ typedef unsigned short blocks_row;
 /* timer presets */
 #define LOCK_DELAY_MOVE 20
 #define LOCK_DELAY_STEP 30
+#define MIN_LOCK_DELAY 15
 
 struct tetmino {
 	unsigned shape;
