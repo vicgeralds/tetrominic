@@ -4,10 +4,13 @@
     <title>tetrominic</title>
     <link href="styles/blocks.css" rel="stylesheet" />
     <style>
-      body {
+      body, :fullscreen {
         background: darkslategray;
+      }
+      .game {
         display: flex;
         justify-content: center;
+        align-items: center;
       }
     </style>
     <script type="importmap">
@@ -19,7 +22,9 @@
     </script>
   </head>
   <body>
-    <div class="tetgrid"></div>
+    <div class="game">
+      <div class="tetgrid"></div>
+    </div>
     <script type="module" src="lib/main.js"></script>
   </body>
 </html>
