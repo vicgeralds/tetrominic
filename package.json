@@ -24,6 +24,7 @@
     "url": "https://github.com/vicgeralds/tetrominic/issues"
   },
   "devDependencies": {
+    "@types/node": "^22.13.9",
     "typescript": "^5.4.2"
   },
   "dependencies": {
