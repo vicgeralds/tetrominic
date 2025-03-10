@@ -79,17 +79,12 @@ void cleartoeol()
 
 void clearscreen()
 {
-	static int saved_lines;
-
 	if (terminal.y0 > 0) {
-		terminal.lines = terminal.y0 + (
-			saved_lines > terminal.lines ? saved_lines : terminal.lines
-		);
+		terminal.lines += terminal.y0;
 		terminal.y0 = 0;
 	}
 	moveto(terminal.x0, terminal.y0);
 	fputs(CSI "J", stdout);
-	saved_lines = terminal.lines;
 	terminal.lines = 1;
 }
 

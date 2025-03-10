@@ -3,7 +3,7 @@
   "version": "0.4.3",
   "description": "tetromino game",
   "type": "module",
-  "main": "lib/tetrominic.cjs",
+  "main": "index.js",
   "bin": {
     "tetrominic": "cli.js"
   },
@@ -25,9 +25,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.13.9",
-    "typescript": "^5.4.2"
-  },
-  "dependencies": {
+    "typescript": "^5.4.2",
     "uhtml": "^4.7.0"
   }
 }

@@ -1,9 +1,5 @@
 #!/usr/bin/env node
 
-import * as readline from 'node:readline'
-import tetrominic from './lib/tetrominic.cjs'
-const { onkeypress } = tetrominic
+import { start } from './index.js'
 
-readline.emitKeypressEvents(process.stdin)
-
-process.stdin.on('keypress', onkeypress)
+start()

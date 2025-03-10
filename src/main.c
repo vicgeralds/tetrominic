@@ -8,16 +8,13 @@
 #include <time.h>
 #include <errno.h>
 
-#ifdef __EMSCRIPTEN__
-#include <emscripten.h>
-#include <stdio.h>
-#endif
-
 #include "terminal/terminal.h"
 #include "terminal/acstext.h"
 #include "terminal/input.h"
 
 #include "game/game.h"
+
+static struct game game;
 
 static volatile sig_atomic_t signal_caught;
 
@@ -33,7 +30,7 @@ static int process_signal()
 	signal_caught = 0;
 
 	if (sig == SIGINT || sig == SIGTERM || sig == SIGTSTP) {
-		terminal.lines = 0;
+		//terminal.lines = 0;
 		restore_terminal();
 
 		/* call default signal handler */
@@ -85,42 +82,16 @@ static void wait_one_frame()
 	}
 }
 
-#ifdef __EMSCRIPTEN__
-EM_JS(void, read_keypress, (char *out), {
-	var key = keystrokes.shift();
-	if (key) stringToUTF8(key, out, 16);
-});
-
-static void do_main_loop(void *arg)
+int run_game(const char *keypress)
 {
-	struct game *game = (struct game *) arg;
-	char input[16] = "";
-
-	int not_ready = EM_ASM_INT({
-		return +!tetField
-	});
-	if (not_ready) return;
-
-	read_keypress(input);
-
-	if (!update_game(game, input)) {
-		restore_terminal();
-		emscripten_cancel_main_loop();
-	}
+	return update_game(&game, keypress);
 }
-#endif
 
 static void run_game_loop()
 {
 	struct terminal_input input = {{""}};
 	const char *keypress = input.current.s;
-	struct game game;
 
-	init_game(&game, 20);
-
-#ifdef __EMSCRIPTEN__
-	emscripten_set_main_loop_arg(do_main_loop, &game, TETFIELD_FPS, 1);
-#else
 	signal(SIGINT, catch_signal);
 	signal(SIGTERM, catch_signal);
 	signal(SIGCONT, catch_signal);
@@ -129,30 +100,35 @@ static void run_game_loop()
 	signal(SIGWINCH, catch_signal);
 #endif
 
-	while (update_game(&game, keypress)) {
+	while (run_game(keypress)) {
 		wait_one_frame();
 		process_signal();
 		keypress = read_terminal_keypress(&input);
 		process_signal();
 	}
-#endif
 }
 
-int main(int argc, char **argv)
+int main()
 {
 	setlocale(LC_CTYPE, "");
 
+#ifndef __EMSCRIPTEN__
 	if (!init_terminal()) {
 		return EXIT_FAILURE;
 	}
+#endif
 	detect_charset();
 
 	/* seed random number generator */
 	srandom(time(NULL));
 
+	init_game(&game, 20);
+
+#ifndef __EMSCRIPTEN__
 	run_game_loop();
 
 	restore_terminal();
+#endif
 
 	return EXIT_SUCCESS;
 }

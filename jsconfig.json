@@ -5,5 +5,5 @@
     "checkJs": true,
     "strict": true
   },
-  "include": ["lib/*.js", "lib/game/*"]
+  "include": ["*.js", "lib/*.js", "lib/game/*"]
 }

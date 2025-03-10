@@ -1,6 +1,3 @@
-#ifdef __EMSCRIPTEN__
-#include <emscripten.h>
-#endif
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
@@ -20,12 +17,6 @@ static struct termios saved_term_attr;
 
 static int set_input_mode()
 {
-#ifdef __EMSCRIPTEN__
-	return EM_ASM_INT(
-		if (process.stdin.isTTY) process.stdin.setRawMode(true);
-		return +process.stdin.isTTY || 0;
-	);
-#else
 	struct termios attr = saved_term_attr;
 
 	if (attr.c_lflag == 0) {
@@ -39,73 +30,57 @@ static int set_input_mode()
 	attr.c_cc[VTIME] = 2;
 
 	return tcsetattr(STDIN_FILENO, TCSANOW, &attr) == 0;
-#endif
 }
 
 static int restore_input_mode()
 {
-#ifdef __EMSCRIPTEN__
-	return EM_ASM_INT(
-		if (process.stdin.isTTY) process.stdin.setRawMode(false);
-		return +process.stdin.isTTY || 0;
-	);
-#else
 	if (saved_term_attr.c_lflag == 0) {
 		return 0;
 	}
 
 	return tcsetattr(STDIN_FILENO, TCSANOW, &saved_term_attr) == 0;
-#endif
 }
 
-static void get_terminal_size(int fd)
+void resize_terminal(int columns, int rows)
 {
-#if defined(TIOCGSIZE)
-	struct ttysize tty;
-	if (!ioctl(fd, TIOCGSIZE, &tty)) {
-		terminal.width  = tty.ts_cols;
-		terminal.height = tty.ts_lines;
+	if (columns > 0) {
+		terminal.width = columns;
 	}
-#elif defined(TIOCGWINSZ)
+	if (rows > 0) {
+		terminal.height = rows;
+	}
+	set_text_attr(0);
+	clearscreen();
+}
+
+static void get_terminal_size()
+{
+#ifdef TIOCGWINSZ
 	struct winsize win;
-	if (!ioctl(fd, TIOCGWINSZ, &win)) {
-		terminal.width  = win.ws_col;
-		terminal.height = win.ws_row;
+	if (!ioctl(STDOUT_FILENO, TIOCGWINSZ, &win)) {
+		resize_terminal(win.ws_col, win.ws_row);
+		return;
 	}
 #endif
+	resize_terminal(0, 0);
 }
 
 int init_terminal()
 {
-#ifdef __EMSCRIPTEN__
-	if (!EM_ASM_INT(return +process.stdout.isTTY || 0)) {
-		return 0;
-	}
-#else
 	if (!isatty(STDOUT_FILENO)) {
 		return 0;
 	}
 	tcgetattr(STDIN_FILENO, &saved_term_attr);
-#endif
 	setup_terminal();
 	return 1;
 }
 
 void setup_terminal()
 {
-	int fd = STDOUT_FILENO;
 	if (set_input_mode()) {
 		hide_cursor();
-		fd = STDIN_FILENO;
 	}
-#ifdef __EMSCRIPTEN__
-	terminal.width = EM_ASM_INT(return process.stdout.columns);
-	terminal.height = EM_ASM_INT(return process.stdout.rows);
-#else
-	get_terminal_size(fd);
-#endif
-	set_text_attr(0);
-	clearscreen();
+	get_terminal_size();
 }
 
 void restore_terminal()
