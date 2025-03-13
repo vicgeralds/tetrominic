@@ -1,4 +1,4 @@
-import { exit } from 'node:process'
+import process from 'node:process'
 import { TETFIELD_FPS } from './lib/game/tetfield.js'
 import { Terminal } from './lib/terminal.js'
 import tetrominic from './lib/tetrominic.js'
@@ -18,13 +18,13 @@ export function start () {
 
   terminal.on('resize', resizeTerminal)
   terminal.on('restore', restoreTerminal)
-  terminal.on('close', exit)
+  terminal.on('close', process.exit)
 
   terminal.resize()
 
   setInterval(() => {
     if (!runGame(terminal.keystrokes.shift() || '')) {
-      exit()
+      process.exit()
     }
   }, 1000 / TETFIELD_FPS)
 }

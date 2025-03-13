@@ -12,19 +12,20 @@
   },
   "scripts": {
     "start": "npx serve .",
-    "build": "make"
+    "test": "standard"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vicgeralds/tetrominic.git"
   },
   "author": "Victor Geraldsson",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/vicgeralds/tetrominic/issues"
   },
   "devDependencies": {
     "@types/node": "^22.13.9",
+    "standard": "^17.1.2",
     "typescript": "^5.4.2",
     "uhtml": "^4.7.0"
   }
